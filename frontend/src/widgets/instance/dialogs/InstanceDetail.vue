@@ -668,6 +668,29 @@ defineExpose({
             </a-col>
 
             <a-col :xs="24" :lg="8" :offset="0">
+              <a-form-item name="pullPolicy">
+                <a-typography-title :level="5" :class="{ 'require-field': isDockerMode }">
+                  Always pull image
+                </a-typography-title>
+                <a-typography-paragraph>
+                  <a-typography-text type="secondary" :class="!isPhone && 'two-line-height'">
+                    Always pull Docker image
+                  </a-typography-text>
+                </a-typography-paragraph>
+                <a-switch
+                  v-model:checked="options.config.docker.pullPolicy"
+                  :disabled="isGlobalTerminal"
+                  :checked-value=true
+                  :un-checked-value=false
+                >
+                  <template #checkedChildren><check-outlined /></template>
+                  <template #unCheckedChildren><close-outlined /></template>
+                </a-switch>
+              </a-form-item>
+            </a-col>
+
+
+            <a-col :xs="24" :lg="8" :offset="0">
               <a-form-item>
                 <a-typography-title :level="5">{{ t("TXT_CODE_10194e6a") }}</a-typography-title>
                 <a-typography-paragraph>

@@ -50,28 +50,32 @@ export default class DockerPullCommand extends InstanceCommand {
 
   async exec(instance: Instance) {
     const imageName = instance.config.docker.image;
+    const pullPolicy = instance.config.docker.pullPolicy;
     if (!imageName) throw new Error(t("TXT_CODE_17be5f70"));
     const cachedStartCount = instance.startCount;
     // If the image exists, there is no need to pull again.
-    if (await checkImage(imageName)) return;
+    if(pullPolicy === false ) {
+        if (await checkImage(imageName)) return;
+      } else {
 
-    try {
-      const docker = new DefaultDocker();
-      instance.println("CONTAINER", t("TXT_CODE_2fa46b8c") + imageName);
-      instance.asynchronousTask = this;
+      try {
+        const docker = new DefaultDocker();
+        instance.println("CONTAINER", t("TXT_CODE_2fa46b8c") + imageName);
+        instance.asynchronousTask = this;
 
-      await docker.pull(imageName, {});
+        await docker.pull(imageName, {});
 
-      await this.awaitImageDone(instance, imageName);
-      if (cachedStartCount !== instance.startCount) return;
-      instance.println("CONTAINER", t("TXT_CODE_c68b0bef"));
-    } catch (err: any) {
-      if (cachedStartCount !== instance.startCount) return;
-      throw new Error([t("TXT_CODE_db37b7f9"), err?.message].join("\n"));
-    } finally {
-      this.stopped(instance);
-    }
+        await this.awaitImageDone(instance, imageName);
+        if (cachedStartCount !== instance.startCount) return;
+        instance.println("CONTAINER", t("TXT_CODE_c68b0bef"));
+      } catch (err: any) {
+        if (cachedStartCount !== instance.startCount) return;
+        throw new Error([t("TXT_CODE_db37b7f9"), err?.message].join("\n"));
+      } finally {
+        this.stopped(instance);
+      }
   }
+}
 
   async stop(instance: Instance): Promise<void> {
     this.stopped(instance);

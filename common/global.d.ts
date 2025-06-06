@@ -48,6 +48,7 @@ declare global {
 
   interface IGlobalInstanceDockerConfig {
     containerName?: string;
+    pullPolicy?: boolean;
     image?: string;
     memory?: number;
     ports?: string[];

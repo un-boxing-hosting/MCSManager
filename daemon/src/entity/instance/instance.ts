@@ -196,6 +196,7 @@ export default class Instance extends EventEmitter {
 
     if (cfg.docker) {
       configureEntityParams(this.config.docker, cfg.docker, "containerName", String);
+      configureEntityParams(this.config.docker, cfg.docker, "pullPolicy", Boolean);
       configureEntityParams(this.config.docker, cfg.docker, "image", String);
       configureEntityParams(this.config.docker, cfg.docker, "memory", Number);
       configureEntityParams(this.config.docker, cfg.docker, "ports");

@@ -60,6 +60,7 @@ const formData = reactive<NewInstanceForm>({
   docker: {
     containerName: "",
     image: "",
+    pullPolicy: false,
     ports: [],
     extraVolumes: [],
     networkMode: "bridge",

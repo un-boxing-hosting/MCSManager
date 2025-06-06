@@ -55,6 +55,7 @@ export default class InstanceConfig implements IGlobalInstanceConfig {
   public docker: IGlobalInstanceDockerConfig = {
     containerName: "",
     image: "",
+    pullPolicy: false,
     ports: [],
     extraVolumes: [],
     memory: 0,
