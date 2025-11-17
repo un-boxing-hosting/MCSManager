@@ -19,6 +19,23 @@ class Config {
   public maxZipFileSize = 200;
   public language = "en_us";
   public defaultInstancePath = "";
+  public allocatablePortRange = [10010, 65500];
+  public currentAllocatablePort = 10010;
+  public portAssignInterval = 5;
+
+  // default: Unlimited, if set 40 => (40 packets * 64KB)/s => 2.5MB/s
+  public uploadSpeedRate = 0;
+  // default: Unlimited, if set 32 => (32 packets * 64KB)/s => 2MB/s
+  public downloadSpeedRate = 0;
+  // default: 1, if set 0 => Unlimited
+  public maxDownloadFromUrlFileCount = 1;
+
+  public whiteListPanelIp = false;
+  public whiteListPanelIps = ["127.0.0.1", "::1"];
+
+  ssl = false;
+  sslPemPath = "";
+  sslKeyPath = "";
 }
 
 // daemon configuration class
@@ -47,4 +64,4 @@ class GlobalEnv {
 const globalConfiguration = new GlobalConfiguration();
 const globalEnv = new GlobalEnv();
 
-export { globalConfiguration, Config, globalEnv };
+export { Config, globalConfiguration, globalEnv };

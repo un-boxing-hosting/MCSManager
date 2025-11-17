@@ -1,24 +1,26 @@
-import { $t } from "../i18n";
 import Router from "@koa/router";
-import send from "koa-send";
+import formidable from "formidable";
 import fs from "fs-extra";
 import path from "path";
+import { DAEMON_INDEX_HTML } from "../const/index_html";
+import FileWriter from "../entity/file_writer";
+import { $t } from "../i18n";
 import { missionPassport } from "../service/mission_passport";
-import InstanceSubsystem from "../service/system_instance";
 import FileManager from "../service/system_file";
-import formidable from "formidable";
+import InstanceSubsystem from "../service/system_instance";
+import uploadManager from "../service/upload_manager";
 import { clearUploadFiles } from "../tools/filepath";
-import logger from "../service/log";
+import { sendFile } from "../utils/speed_limit";
 
 const router = new Router();
 
 // Define the HTTP home page display route
 router.all("/", async (ctx) => {
-  ctx.body = "[MCSManager Daemon] Status: OK | reference: https://mcsmanager.com/";
+  ctx.body = DAEMON_INDEX_HTML;
   ctx.status = 200;
 });
 
-// file download route
+// File download route
 router.get("/download/:key/:fileName", async (ctx) => {
   const key = ctx.params.key;
   const paramsFileName = ctx.params.fileName;
@@ -39,21 +41,19 @@ router.get("/download/:key/:fileName", async (ctx) => {
     if (!fileManager.check(fileRelativePath))
       throw new Error((ctx.body = "Access denied: Invalid destination"));
 
-    // send File
     const fileAbsPath = fileManager.toAbsolutePath(fileRelativePath);
-    const fileDir = path.dirname(fileAbsPath);
-    const fileName = path.basename(fileAbsPath);
-    ctx.set("Content-Type", "application/octet-stream");
-    await send(ctx, fileName, { root: fileDir + "/", hidden: true });
+    await sendFile(ctx, fileAbsPath);
   } catch (error: any) {
-    ctx.body = $t("TXT_CODE_http_router.downloadErr", { error: error.message });
-    ctx.status = 500;
+    if (!ctx.res.headersSent) {
+      ctx.body = $t("TXT_CODE_http_router.downloadErr", { error: error.message });
+      ctx.status = 500;
+    }
   } finally {
     missionPassport.deleteMission(key);
   }
 });
 
-// File upload route
+// Old version upload route
 router.post("/upload/:key", async (ctx) => {
   const key = String(ctx.params.key);
   const unzip = Boolean(ctx.query.unzip);
@@ -71,8 +71,10 @@ router.post("/upload/:key", async (ctx) => {
       let uploadedFile: formidable.File;
       if (tmpFiles instanceof Array) {
         uploadedFile = tmpFiles[0];
+      } else if (tmpFiles) {
+        uploadedFile = tmpFiles;
       } else {
-        throw new Error("Access denied: Files must a array!");
+        throw new Error("Empty File!");
       }
 
       const originFileName = uploadedFile.originalFilename || "";
@@ -107,14 +109,6 @@ router.post("/upload/:key", async (ctx) => {
 
       const fileSaveAbsolutePath = fileManager.toAbsolutePath(fileSaveRelativePath);
 
-      logger.info(
-        "Browser Upload File:",
-        fileSaveAbsolutePath,
-        "File size:",
-        Number(uploadedFile.size / 1024 / 1024).toFixed(0),
-        "MB"
-      );
-
       await fs.move(uploadedFile.filepath, fileSaveAbsolutePath, {
         overwrite: true
       });
@@ -136,4 +130,97 @@ router.post("/upload/:key", async (ctx) => {
     if (tmpFiles) clearUploadFiles(tmpFiles);
   }
 });
+
+router.post("/upload-new/:key", async (ctx) => {
+  const key = String(ctx.params.key);
+  const unzip = Boolean(ctx.query.unzip);
+  const zipCode = String(ctx.query.code);
+  const filename = String(ctx.query.filename);
+  const size = Number(ctx.query.size);
+  if (ctx.query.stop) {
+    const writer = uploadManager.get(key);
+    if (writer) {
+      await writer.stop();
+      uploadManager.delete(key);
+      ctx.body = "OK";
+      return;
+    } else {
+      ctx.body = "Access denied: No task found";
+      ctx.status = 500;
+      return;
+    }
+  }
+  try {
+    const mission = missionPassport.getMission(key, "upload");
+    if (!mission) throw new Error("Access denied: No task found");
+    const instance = InstanceSubsystem.getInstance(mission.parameter.instanceUuid);
+    if (!instance) throw new Error("Access denied: No instance found");
+    const uploadDir = mission.parameter.uploadDir;
+    const cwd = instance.absoluteCwdPath();
+    const overwrite = ctx.query.overwrite !== "false";
+    const filePath = await FileWriter.getPath(cwd, uploadDir, filename, overwrite);
+    let fr = uploadManager.getByPath(filePath);
+    if (fr && size != fr.writer.size) {
+      uploadManager.delete(fr.id);
+      await fr.writer.stop();
+      fr = undefined;
+    }
+    if (!fr) {
+      const fileWriter = new FileWriter(cwd, filename, size, unzip, zipCode, filePath);
+      await fileWriter.init();
+      const id = uploadManager.add(fileWriter);
+      fr = { id, writer: fileWriter };
+    }
+
+    ctx.body = {
+      data: {
+        id: fr.id,
+        received: fr.writer.received
+      },
+      status: 200
+    };
+    return;
+  } catch (error: any) {
+    ctx.body = error.message;
+    ctx.status = 500;
+  } finally {
+    missionPassport.deleteMission(key);
+  }
+});
+
+router.post("/upload-piece/:id", async (ctx) => {
+  const id = String(ctx.params.id);
+  const offset = Number(ctx.query.offset);
+  const tmpFiles = ctx.request.files?.file;
+
+  try {
+    if (!tmpFiles) {
+      ctx.body = "Access denied: No file found";
+      ctx.status = 500;
+    }
+
+    let uploadedFile: formidable.File;
+    if (tmpFiles instanceof Array) {
+      uploadedFile = tmpFiles[0];
+    } else if (tmpFiles) {
+      uploadedFile = tmpFiles;
+    } else {
+      throw new Error("Empty File!");
+    }
+    const writer = uploadManager.get(id);
+    if (!writer) throw new Error("Access denied: No task found");
+
+    const chunk = await fs.readFile(uploadedFile.filepath);
+    await writer.write(offset, chunk);
+
+    if (tmpFiles) clearUploadFiles(tmpFiles);
+
+    ctx.body = "OK";
+    return;
+  } catch (error: any) {
+    ctx.body = error.message;
+    ctx.status = 500;
+  }
+});
+
 export default router;

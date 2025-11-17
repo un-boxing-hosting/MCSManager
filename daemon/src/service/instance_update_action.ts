@@ -1,11 +1,11 @@
-import { $t } from "../i18n";
-import { killProcess } from "mcsmanager-common";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import logger from "../service/log";
-import Instance from "../entity/instance/instance";
-import { commandStringToArray } from "../entity/commands/base/command_parser";
 import iconv from "iconv-lite";
+import { killProcess } from "mcsmanager-common";
+import { commandStringToArray } from "../entity/commands/base/command_parser";
+import Instance from "../entity/instance/instance";
+import { $t } from "../i18n";
 import { AsyncTask, IAsyncTaskJSON } from "../service/async_task_service";
+import logger from "../service/log";
 import { SetupDockerContainer } from "./docker_process_service";
 
 export class InstanceUpdateAction extends AsyncTask {
@@ -33,13 +33,11 @@ export class InstanceUpdateAction extends AsyncTask {
       $t("TXT_CODE_general_update.update"),
       $t("TXT_CODE_general_update.readyUpdate", { instanceUuid: this.instance.instanceUuid })
     );
+    this.instance.println($t("TXT_CODE_general_update.update"), `${updateCommand}`);
 
     // Docker Update Command Mode
     if (this.instance.config.processType === "docker" && this.instance.config.docker?.image) {
-      this.containerWrapper = new SetupDockerContainer(
-        this.instance,
-        this.instance.config.updateCommand
-      );
+      this.containerWrapper = new SetupDockerContainer(this.instance, updateCommand);
       await this.containerWrapper.start();
       await this.containerWrapper.attach(this.instance);
       await this.containerWrapper.wait();
@@ -47,12 +45,11 @@ export class InstanceUpdateAction extends AsyncTask {
       return;
     }
 
-    // command parsing
     const commandList = commandStringToArray(updateCommand);
     const commandExeFile = commandList[0];
     const commandParameters = commandList.slice(1);
     if (commandList.length === 0) {
-      return this.instance.failure(new Error($t("TXT_CODE_general_update.cmdFormatErr")));
+      throw new Error($t("TXT_CODE_general_update.cmdFormatErr"));
     }
 
     // start the update command
@@ -62,10 +59,7 @@ export class InstanceUpdateAction extends AsyncTask {
       windowsHide: true
     });
     if (!process || !process.pid) {
-      return this.instance.println(
-        $t("TXT_CODE_general_update.err"),
-        $t("TXT_CODE_general_update.updateFailed")
-      );
+      throw new Error($t("TXT_CODE_general_update.updateFailed"));
     }
 
     // process & pid

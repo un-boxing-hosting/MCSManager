@@ -14,9 +14,11 @@ declare global {
     fileCode: string;
     processType: string;
     updateCommand: string;
+    runAs: string;
     actionCommandList: any[];
     crlf: number;
     category: number;
+    basePort: number;
 
     // Steam RCON
     enableRcon?: boolean;
@@ -32,6 +34,7 @@ declare global {
     eventTask: {
       autoStart: boolean;
       autoRestart: boolean;
+      autoRestartMaxTimes: number;
       ignore: boolean;
     };
     docker: IGlobalInstanceDockerConfig;
@@ -63,12 +66,27 @@ declare global {
     workingDir?: string;
     env?: string[];
     changeWorkdir?: boolean;
+    memorySwap?: number;
+    memorySwappiness?: number;
   }
 
   interface IPanelResponseProtocol {
     data: any;
     timestamp: number;
     status: number;
+  }
+
+  interface IPanelOverviewRemoteMappingResponse {
+    from: {
+      ip: string;
+      port: number;
+      prefix: string;
+    };
+    to: {
+      ip: string;
+      port: number;
+      prefix: string;
+    };
   }
 
   interface IPanelOverviewRemoteResponse {
@@ -105,8 +123,19 @@ declare global {
     ip: string;
     port: number;
     prefix: string;
+    remoteMappings: IPanelOverviewRemoteMappingResponse[];
     available: boolean;
     remarks: string;
+    config: {
+      language: string;
+      uploadSpeedRate: number;
+      downloadSpeedRate: number;
+      maxDownloadFromUrlFileCount: number;
+      portRangeStart: number;
+      portRangeEnd: number;
+      portAssignInterval: number;
+      port: number;
+    };
   }
 
   interface IPanelOverviewResponse {
@@ -161,6 +190,7 @@ declare global {
     page: string;
     items: ILayoutCard[];
     theme?: {
+      logoImage: string;
       backgroundImage: string;
     };
   }
@@ -192,6 +222,7 @@ declare global {
     language: string;
     description: string;
     title: string;
+    category: string;
     runtime: string;
     size: string;
     hardware: string;
@@ -199,15 +230,32 @@ declare global {
     targetLink?: string;
     author: string;
     setupInfo?: IJsonData;
+    gameType: string;
+    image: string;
+    platform: string;
+    tags?: string[];
+    isSummary?: boolean;
+    key?: string;
   }
 
   interface IQuickStartTemplate {
-    remark: string;
     languages: {
       label: string;
       value: string;
     }[];
     packages: IQuickStartPackages[];
+  }
+
+  export interface IBusinessProductInfo {
+    productId: number;
+    title: string;
+    price: number;
+    ispId: number;
+    daemonId: string;
+    payload?: string;
+    remark?: string;
+    hours?: number;
+    daemonUuid?: string;
   }
 }
 

@@ -1,19 +1,35 @@
+import { t } from "i18next";
+import os from "os";
+import { globalConfiguration, globalEnv } from "../entity/config";
+import Instance from "../entity/instance/instance";
 import { $t } from "../i18n";
+import downloadManager from "../service/download_manager";
+import { getFileManager, getWindowsDisks } from "../service/file_router_service";
 import * as protocol from "../service/protocol";
 import { routerApp } from "../service/router";
 import InstanceSubsystem from "../service/system_instance";
-import { getFileManager, getWindowsDisks } from "../service/file_router_service";
-import { globalConfiguration, globalEnv } from "../entity/config";
-import os from "os";
+import uploadManager from "../service/upload_manager";
+import { checkSafeUrl } from "../utils/url";
 
 // Some routers operate router authentication middleware
 routerApp.use((event, ctx, data, next) => {
   if (event.startsWith("file/")) {
     const instanceUuid = data.instanceUuid;
-    if (!InstanceSubsystem.exists(instanceUuid)) {
+    const instance = InstanceSubsystem.getInstance(instanceUuid);
+    if (!instance) {
       return protocol.error(ctx, event, {
         instanceUuid: instanceUuid,
         err: $t("TXT_CODE_file_router.instanceNotExist", { instanceUuid: instanceUuid })
+      });
+    }
+
+    if (
+      [Instance.STATUS_BUSY, Instance.STATUS_STARTING].includes(instance.status()) &&
+      !["file/list", "file/status"].includes(event)
+    ) {
+      return protocol.error(ctx, event, {
+        instanceUuid: instanceUuid,
+        err: $t("TXT_CODE_bbedcf29")
       });
     }
   }
@@ -21,12 +37,12 @@ routerApp.use((event, ctx, data, next) => {
 });
 
 // List the files in the specified instance working directory
-routerApp.on("file/list", (ctx, data) => {
+routerApp.on("file/list", async (ctx, data) => {
   try {
     const fileManager = getFileManager(data.instanceUuid);
     const { page, pageSize, target, fileName } = data;
     fileManager.cd(target);
-    const overview = fileManager.list(page, pageSize, fileName);
+    const overview = await fileManager.list(page, pageSize, fileName);
     protocol.response(ctx, overview);
   } catch (error: any) {
     protocol.responseError(ctx, error);
@@ -53,6 +69,7 @@ routerApp.on("file/status", async (ctx, data) => {
     protocol.response(ctx, {
       instanceFileTask: instance.info.fileLock ?? 0,
       globalFileTask: globalEnv.fileTaskCount ?? 0,
+      downloadFileFromURLTask: downloadManager.downloadingCount,
       platform: os.platform(),
       isGlobalInstance: data.instanceUuid === InstanceSubsystem.GLOBAL_INSTANCE_UUID,
       disks: getWindowsDisks()
@@ -81,6 +98,40 @@ routerApp.on("file/mkdir", (ctx, data) => {
     const fileManager = getFileManager(data.instanceUuid);
     fileManager.mkdir(target);
     protocol.response(ctx, true);
+  } catch (error: any) {
+    protocol.responseError(ctx, error);
+  }
+});
+
+// download a file from url
+routerApp.on("file/download_from_url", async (ctx, data) => {
+  try {
+    const url = data.url;
+    const fileName = data.fileName;
+
+    if (!checkSafeUrl(url)) {
+      protocol.responseError(ctx, t("TXT_CODE_3fe1b194"), {
+        disablePrint: true
+      });
+      return;
+    }
+
+    const fileManager = getFileManager(data.instanceUuid);
+    const targetPath = fileManager.toAbsolutePath(fileName);
+
+    const maxDownloadFromUrlFileCount = globalConfiguration.config.maxDownloadFromUrlFileCount;
+    if (
+      maxDownloadFromUrlFileCount > 0 &&
+      downloadManager.downloadingCount >= maxDownloadFromUrlFileCount
+    ) {
+      protocol.responseError(ctx, t("TXT_CODE_821a742e", { count: maxDownloadFromUrlFileCount }), {
+        disablePrint: true
+      });
+      return;
+    }
+
+    await downloadManager.downloadFromUrl(url, targetPath);
+    protocol.response(ctx, {});
   } catch (error: any) {
     protocol.responseError(ctx, error);
   }
@@ -122,8 +173,15 @@ routerApp.on("file/delete", async (ctx, data) => {
     const targets = data.targets;
     const fileManager = getFileManager(data.instanceUuid);
     for (const target of targets) {
-      // async delete
-      fileManager.delete(target);
+      const path = fileManager.toAbsolutePath(target);
+      const uploadTask = uploadManager.getByPath(path);
+      if (uploadTask != undefined) {
+        uploadManager.delete(uploadTask.id);
+        uploadTask.writer.stop();
+      } else {
+        // async delete
+        fileManager.delete(target);
+      }
     }
     protocol.response(ctx, true);
   } catch (error: any) {
@@ -163,6 +221,7 @@ routerApp.on("file/compress", async (ctx, data) => {
         })
       );
     }
+
     // Statistics of the number of tasks in a single instance file and the number of tasks in the entire daemon process
     function fileTaskStart() {
       if (instance) {
@@ -170,6 +229,7 @@ routerApp.on("file/compress", async (ctx, data) => {
         globalEnv.fileTaskCount++;
       }
     }
+
     function fileTaskEnd() {
       if (instance) {
         instance.info.fileLock--;

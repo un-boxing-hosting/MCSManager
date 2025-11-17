@@ -6,7 +6,22 @@
 
   "i18n-ally.sourceLanguage": "en",
   "i18n-ally.extract.keyMaxLength": 10000,
-  "cSpell.words": ["BUKKIT", "BUNGEECORD", "MINECRAFT"],
+  "cSpell.words": [
+    "BUKKIT",
+    "BUNGEECORD",
+    "cpuset",
+    "frpc",
+    "LOGNAME",
+    "MCSM",
+    "mcsmanager",
+    "MINECRAFT",
+    "mkdirs",
+    "openfrp",
+    "percpu",
+    "precpu",
+    "steamcmd",
+    "totp"
+  ],
   "i18n-ally.localesPaths": [
     "languages",
     "frontend/src/lang",
@@ -15,5 +30,16 @@
   ],
   "i18n-ally.keystyle": "flat",
   "i18n-ally.enabledFrameworks": ["vue"],
-  "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?"
+  "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "always"
+  },
+  "typescript.preferences.organizeImports": {
+    "enabled": true
+  },
+  "javascript.preferences.organizeImports": {
+    "enabled": true
+  },
+  "editor.formatOnSave": true
 }

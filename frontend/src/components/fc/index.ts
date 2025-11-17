@@ -1,16 +1,21 @@
 import { useMountComponent } from "@/hooks/useMountComponent";
 import type { UserInstance } from "@/types/user";
 
-import SelectInstances from "@/components/fc/SelectInstances.vue";
 import CmdAssistantDialog from "@/components/fc/CmdAssistantDialog/index.vue";
 import KvOptionsDialogVue from "@/components/fc/KvOptionsDialog.vue";
+import SelectInstances from "@/components/fc/SelectInstances.vue";
 import { t } from "@/lang/i18n";
 import type { AntColumnsType } from "@/types/ant";
-import UploadFileDialogVue from "./UploadFileDialog.vue";
-import TaskLoadingDialog from "./TaskLoadingDialog.vue";
-import TagsDialog from "./TagsDialog.vue";
+import type { DownloadFileConfigItem } from "@/types/fileManager";
 import DeleteInstanceDialog from "@/widgets/instance/dialogs/DeleteInstanceDialog.vue";
 import ImageViewerDialog from "@/widgets/instance/dialogs/ImageViewer.vue";
+import MarketDialog from "@/widgets/instance/dialogs/MarketDialog.vue";
+import DownloadFileDialogVue from "./DownloadFileDialog.vue";
+import NodeSelectDialog from "./NodeSelectDialog.vue";
+import RenewalDialog from "./RenewalDialog.vue";
+import TagsDialog from "./TagsDialog.vue";
+import TaskLoadingDialog from "./TaskLoadingDialog.vue";
+import UploadFileDialogVue from "./UploadFileDialog.vue";
 
 interface DockerConfigItem {
   host: string;
@@ -23,6 +28,12 @@ interface PortConfigItem extends DockerConfigItem {
 interface DockerEnvItem {
   label: string;
   value: string;
+}
+
+export async function useDownloadFileDialog() {
+  return (
+    (await useMountComponent().mount<DownloadFileConfigItem>(DownloadFileDialogVue)) || undefined
+  );
 }
 
 export async function useUploadFileDialog() {
@@ -62,19 +73,20 @@ export async function usePortEditDialog(data: PortConfigItem[] = []) {
   return (
     (await useMountComponent({
       data,
+      subTitle: t("TXT_CODE_56b9e6af"),
       title: t("TXT_CODE_c4435af9"),
       columns: [
         {
           align: "center",
           dataIndex: "host",
           title: t("TXT_CODE_534db0b2"),
-          placeholder: "eg: 8080"
+          placeholder: "eg: 8080 or {mcsm_port1}"
         },
         {
           align: "center",
           dataIndex: "container",
           title: t("TXT_CODE_b729d2e"),
-          placeholder: "eg: 25565"
+          placeholder: "eg: 25565 or {mcsm_port1}"
         },
         {
           align: "center",
@@ -171,4 +183,40 @@ export async function useImageViewerDialog(
   return await useMountComponent({ instanceId, daemonId, fileName, frontDir }).mount(
     ImageViewerDialog
   );
+}
+
+export async function openRenewalDialog(instanceId: string, daemonId: string, productId: number) {
+  return useMountComponent({ instanceId, daemonId, productId })
+    .load<InstanceType<typeof RenewalDialog>>(RenewalDialog)
+    .openDialog();
+}
+
+export async function openNodeSelectDialog() {
+  const dialog = useMountComponent({}).load<InstanceType<typeof NodeSelectDialog>>(
+    NodeSelectDialog
+  );
+  return dialog!.openDialog();
+}
+
+export interface OpenMarketDialogProps {
+  daemonId?: string;
+  instanceId?: string;
+  autoInstall?: boolean;
+  btnText?: string;
+  dialogTitle?: string;
+  showCustomBtn?: boolean;
+  onlyDockerTemplate?: boolean;
+}
+
+export async function openMarketDialog(
+  daemonId?: string,
+  instanceId?: string,
+  options: OpenMarketDialogProps = {}
+) {
+  const dialog = useMountComponent({
+    daemonId,
+    instanceId,
+    ...options
+  }).load<InstanceType<typeof MarketDialog>>(MarketDialog);
+  return dialog!.openDialog();
 }

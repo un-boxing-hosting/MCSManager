@@ -1,17 +1,19 @@
 import { useDefineApi } from "@/stores/useDefineApi";
+import type { RemoteMappingEntry } from "@/tools/protocol";
 import type {
   InstanceDetail,
+  JsonData,
   NewInstanceForm,
-  QuickStartTemplate,
-  Schedule,
   NewScheduleTask,
-  JsonData
+  QuickStartTemplate,
+  Schedule
 } from "@/types";
 
 export interface MissionPassportResponse {
   addr: string;
   password: string;
   prefix: string;
+  remoteMappings: RemoteMappingEntry[];
 }
 
 export const setUpTerminalStreamChannel = useDefineApi<
@@ -148,6 +150,7 @@ export const updateInstanceConfig = useDefineApi<
       stopCommand?: string;
       eventTask?: {
         autoRestart: boolean;
+        autoRestartMaxTimes: number;
         autoStart: boolean;
       };
       pingConfig?: {
@@ -193,6 +196,7 @@ export const uploadAddress = useDefineApi<
     instanceUuid: string;
     password: string;
     addr: string;
+    remoteMappings: RemoteMappingEntry[];
   }
 >({
   url: "/api/instance/upload",
@@ -280,6 +284,13 @@ export const queryAsyncTask = useDefineApi<
       instanceUuid: string;
       status: number;
       taskId: string;
+      downloadProgress?: {
+        percentage: number;
+        downloadedBytes: number;
+        totalBytes: number;
+        speed: number;
+        eta: number;
+      };
     };
   }
 >({

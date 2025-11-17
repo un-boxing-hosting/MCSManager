@@ -1,5 +1,5 @@
-import Instance from "./instance";
 import os from "os";
+import Instance from "./instance";
 
 interface IActionCommand {
   name: string;
@@ -24,8 +24,10 @@ export default class InstanceConfig implements IGlobalInstanceConfig {
   public fileCode: string = "utf-8";
   public processType: ProcessType = "general";
   public updateCommand: string = "";
+  public runAs: string = "";
   public crlf = os.platform() === "win32" ? 2 : 1; // 1: \n  2: \r\n
   public category = 0;
+  public basePort = 0;
 
   // Steam RCON protocol
   public enableRcon = false;
@@ -48,6 +50,7 @@ export default class InstanceConfig implements IGlobalInstanceConfig {
   public eventTask = {
     autoStart: false,
     autoRestart: false,
+    autoRestartMaxTimes: -1,
     ignore: false
   };
 
@@ -59,6 +62,8 @@ export default class InstanceConfig implements IGlobalInstanceConfig {
     ports: [],
     extraVolumes: [],
     memory: 0,
+    memorySwap: undefined,
+    memorySwappiness: undefined,
     networkMode: "bridge",
     networkAliases: [],
     cpusetCpus: "",

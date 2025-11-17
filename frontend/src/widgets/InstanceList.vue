@@ -1,44 +1,44 @@
 <script setup lang="ts">
-import type { LayoutCard } from "@/types/index";
-import { ref, onMounted, computed, h } from "vue";
 import { t } from "@/lang/i18n";
+import type { LayoutCard } from "@/types/index";
 import {
-  SearchOutlined,
+  AppstoreOutlined,
+  CloseOutlined,
+  DatabaseOutlined,
+  DeleteOutlined,
   DownOutlined,
   FormOutlined,
-  DatabaseOutlined,
-  AppstoreOutlined,
-  PlayCircleOutlined,
-  PauseCircleOutlined,
-  CloseOutlined,
-  DeleteOutlined,
-  WarningOutlined,
-  InfoCircleOutlined,
   FrownOutlined,
-  RedoOutlined
+  InfoCircleOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+  RedoOutlined,
+  SearchOutlined,
+  WarningOutlined
 } from "@ant-design/icons-vue";
+import { computed, h, onMounted, ref } from "vue";
 
 import BetweenMenus from "@/components/BetweenMenus.vue";
 import { router } from "@/config/router";
+import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
+import { useScreen } from "@/hooks/useScreen";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
 import {
-  batchStart,
-  batchStop,
-  batchKill,
   batchDelete,
-  batchRestart
+  batchKill,
+  batchRestart,
+  batchStart,
+  batchStop
 } from "@/services/apis/instance";
-import type { NodeStatus } from "../types/index";
-import { notification, Modal } from "ant-design-vue";
-import { computeNodeName } from "../tools/nodes";
-import type { InstanceMoreDetail } from "../hooks/useInstance";
-import { useInstanceMoreDetail } from "../hooks/useInstance";
-import { throttle } from "lodash";
-import { useScreen } from "@/hooks/useScreen";
 import { reportErrorMsg } from "@/tools/validator";
 import { INSTANCE_STATUS } from "@/types/const";
+import { Modal, notification } from "ant-design-vue";
+import { throttle } from "lodash";
+import type { InstanceMoreDetail } from "../hooks/useInstance";
+import { useInstanceMoreDetail } from "../hooks/useInstance";
+import { computeNodeName } from "../tools/nodes";
+import type { NodeStatus } from "../types/index";
 import Shortcut from "./instance/Shortcut.vue";
-import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 
 defineProps<{
   card: LayoutCard;
@@ -144,7 +144,16 @@ const handleChangeNode = async (item: NodeStatus) => {
 
 const toCreateAppPage = () => {
   router.push({
-    path: "/quickstart",
+    path: "/market",
+    query: {
+      daemonId: currentRemoteNode.value?.uuid
+    }
+  });
+};
+
+const toMarketPage = () => {
+  router.push({
+    path: "/market",
     query: {
       daemonId: currentRemoteNode.value?.uuid
     }
@@ -269,13 +278,27 @@ const batchDeleteInstance = async (deleteFile: boolean) => {
   if (selectedInstance.value.length === 0) return reportErrorMsg(t("TXT_CODE_a0a77be5"));
   const { execute, state } = batchDelete();
   const uuids: string[] = [];
+  const paths: string[] = [];
   for (const i of selectedInstance.value) {
     uuids.push(i.instanceUuid);
+    if (i.config?.cwd) {
+      paths.push(i.config.cwd);
+    }
   }
   const confirmDeleteInstanceModal = Modal.confirm({
     title: t("TXT_CODE_2a3b0c17"),
     icon: h(InfoCircleOutlined),
-    content: deleteFile ? t("TXT_CODE_18d2f8ae") : t("TXT_CODE_ac01315a"),
+    content: () =>
+      h("div", {}, [
+        h("p", {}, deleteFile ? t("TXT_CODE_18d2f8ae") : t("TXT_CODE_ac01315a")),
+        paths.length > 1
+          ? null
+          : h("p", { style: "margin-top: 8px; color: #666;" }, [
+              t("TXT_CODE_91d70059"),
+              h("br"),
+              paths.join()
+            ])
+      ]),
     okText: t("TXT_CODE_d507abff"),
     async onOk() {
       try {
@@ -313,8 +336,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="height: 100%" class="container">
-    <a-row :gutter="[24, 24]" style="height: 100%">
+  <div style="min-height: 100%" class="container">
+    <a-row :gutter="[24, 24]" style="min-height: 100%">
       <a-col :span="24">
         <BetweenMenus>
           <template v-if="!isPhone" #left>
@@ -479,38 +502,51 @@ onMounted(async () => {
           </a-tag>
         </div>
       </a-col>
-      <template v-if="isLoading">
+      <a-col v-if="isLoading" :span="24">
         <Loading></Loading>
-      </template>
-      <template v-else-if="instancesMoreInfo.length > 0">
-        <fade-up-animation>
-          <a-col
-            v-for="item in instancesMoreInfo"
-            :key="item.instanceUuid"
-            :span="24"
-            :xl="8"
-            :lg="8"
-            :sm="12"
-          >
-            <Shortcut
-              class="instance-card"
-              :class="{ selected: multipleMode && findInstance(item) }"
-              style="height: 100%"
-              :card="card"
-              :target-instance-info="item"
-              :target-daemon-id="currentRemoteNode?.uuid"
-              @click="handleSelectInstance(item)"
-              @refresh-list="initInstancesData()"
-            />
-          </a-col>
-        </fade-up-animation>
-      </template>
-      <div
+      </a-col>
+
+      <a-col v-else-if="instancesMoreInfo.length > 0" :span="24">
+        <a-row :gutter="[16, 16]">
+          <fade-up-animation>
+            <a-col
+              v-for="item in instancesMoreInfo"
+              :key="item.instanceUuid"
+              :span="24"
+              :xl="8"
+              :lg="8"
+              :sm="12"
+            >
+              <Shortcut
+                class="instance-card"
+                :class="{ selected: multipleMode && findInstance(item) }"
+                style="height: 100%"
+                :card="card"
+                :target-instance-info="item"
+                :target-daemon-id="currentRemoteNode?.uuid"
+                @click="handleSelectInstance(item)"
+                @refresh-list="initInstancesData()"
+              />
+            </a-col>
+          </fade-up-animation>
+        </a-row>
+      </a-col>
+
+      <a-col
         v-else-if="instancesMoreInfo.length === 0"
-        class="flex align-center justify-center h-100 w-100"
+        :span="24"
+        class="flex align-center justify-center h-100 w-100 flex-col"
+        style="position: relative"
       >
-        <Empty :description="t('TXT_CODE_5415f009')" />
-      </div>
+        <div>
+          <Empty :description="t('TXT_CODE_5415f009')" />
+        </div>
+        <div class="mt-20">
+          <a-button type="primary" @click="toMarketPage">
+            {{ t("TXT_CODE_871cb8bc") }}
+          </a-button>
+        </div>
+      </a-col>
     </a-row>
   </div>
 </template>
@@ -532,17 +568,6 @@ onMounted(async () => {
 
 .search-input:hover {
   width: 100%;
-}
-
-.selected {
-  border: 1px solid var(--color-blue-6);
-  user-select: none;
-
-  &:hover {
-    border: 1px solid var(--color-blue-6);
-    transition: all 0.3s;
-    box-shadow: inset 0 0 0 0.5px var(--color-blue-6);
-  }
 }
 
 .instances-tag-container {

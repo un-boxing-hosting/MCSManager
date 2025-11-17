@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { ref, computed, unref } from "vue";
-import { t } from "@/lang/i18n";
-import { useScreen } from "@/hooks/useScreen";
-import type { InstanceDetail, DockerNetworkModes } from "@/types";
-import type { FormInstance } from "ant-design-vue";
-import type { Rule } from "ant-design-vue/es/form";
-import { updateAnyInstanceConfig } from "@/services/apis/instance";
-import { imageList, getNetworkModeList } from "@/services/apis/envImage";
-import { message } from "ant-design-vue";
-import { reportErrorMsg } from "@/tools/validator";
-import { TERMINAL_CODE } from "@/types/const";
-import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
+import { useDockerEnvEditDialog, usePortEditDialog, useVolumeEditDialog } from "@/components/fc";
 import { useAppRouters } from "@/hooks/useAppRouters";
+import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
+import { useScreen } from "@/hooks/useScreen";
+import { t } from "@/lang/i18n";
+import { getNetworkModeList, imageList } from "@/services/apis/envImage";
+import { updateAnyInstanceConfig } from "@/services/apis/instance";
+import { dockerPortsArray } from "@/tools/common";
+import { reportErrorMsg } from "@/tools/validator";
+import type { DockerNetworkModes, InstanceDetail } from "@/types";
+import { TERMINAL_CODE } from "@/types/const";
+import { CheckOutlined, CloseOutlined } from "@ant-design/icons-vue";
+import type { FormInstance } from "ant-design-vue";
+import { message } from "ant-design-vue";
+import type { Rule } from "ant-design-vue/es/form";
+import type { DefaultOptionType } from "ant-design-vue/es/select";
 import { Dayjs } from "dayjs";
 import _ from "lodash";
+import { computed, ref, unref } from "vue";
 import { GLOBAL_INSTANCE_NAME } from "../../../config/const";
 import { dayjsToTimestamp, timestampToDayjs } from "../../../tools/time";
-import { useDockerEnvEditDialog, usePortEditDialog, useVolumeEditDialog } from "@/components/fc";
-import { dockerPortsArray } from "@/tools/common";
-import type { DefaultOptionType } from "ant-design-vue/es/select";
-import { CloseOutlined, CheckOutlined } from "@ant-design/icons-vue";
 
 interface FormDetail extends InstanceDetail {
   dayjsEndTime?: Dayjs;
@@ -40,7 +40,9 @@ enum TabSettings {
   // eslint-disable-next-line no-unused-vars
   Docker = "Docker",
   // eslint-disable-next-line no-unused-vars
-  Advanced = "Advanced"
+  Advanced = "Advanced",
+  // eslint-disable-next-line no-unused-vars
+  ResLimit = "ResLimit"
 }
 
 const emit = defineEmits(["update"]);
@@ -67,7 +69,6 @@ const updateCommandDesc = t("TXT_CODE_fa487a47");
 const UPDATE_CMD_TEMPLATE =
   t("TXT_CODE_61ca492b") +
   `"C:/SteamCMD/steamcmd.exe" +login anonymous +force_install_dir "{mcsm_workspace}" "+app_update 380870 validate" +quit`;
-
 const initFormDetail = () => {
   if (props.instanceInfo) {
     options.value = {
@@ -162,6 +163,18 @@ const rules: Record<string, any> = {
     }
   ],
   cwd: [{ required: true, message: t("TXT_CODE_71c948a9") }],
+  basePort: [
+    {
+      validator: async (_rule: Rule, value: number) => {
+        if (value !== undefined && value !== null && value !== 0) {
+          if (value < 0 || value > 65535) {
+            throw new Error(t("TXT_CODE_12040bf0"));
+          }
+        }
+      },
+      trigger: "change"
+    }
+  ],
   docker: {
     image: [
       {
@@ -276,9 +289,11 @@ defineExpose({
     @ok="submit"
   >
     <div class="dialog-overflow-container">
-      <a-typography-text type="secondary">
-        {{ t("TXT_CODE_cdf7c16a") }}
-      </a-typography-text>
+      <a-tooltip :title="t('TXT_CODE_cdf7c16a')" placement="top">
+        <a-typography-text type="secondary" class="typography-text-ellipsis">
+          {{ t("TXT_CODE_cdf7c16a") }}
+        </a-typography-text>
+      </a-tooltip>
       <div>
         <a-tabs v-model:activeKey="activeKey">
           <a-tab-pane :key="TabSettings.Basic" :tab="t('TXT_CODE_cc7b54b9')"></a-tab-pane>
@@ -287,6 +302,11 @@ defineExpose({
             v-if="!isGlobalTerminal"
             :key="TabSettings.Docker"
             :tab="t('TXT_CODE_afb12200')"
+          ></a-tab-pane>
+          <a-tab-pane
+            v-if="!isGlobalTerminal"
+            :key="TabSettings.ResLimit"
+            :tab="t('TXT_CODE_604d8d63')"
           ></a-tab-pane>
         </a-tabs>
       </div>
@@ -305,9 +325,11 @@ defineExpose({
                 {{ t("TXT_CODE_f70badb9") }}
               </a-typography-title>
               <a-typography-paragraph>
-                <a-typography-text type="secondary">
-                  {{ t("TXT_CODE_818928ba") }}
-                </a-typography-text>
+                <a-tooltip :title="t('TXT_CODE_818928ba')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    {{ t("TXT_CODE_818928ba") }}
+                  </a-typography-text>
+                </a-tooltip>
               </a-typography-paragraph>
               <a-input v-model:value="options.config.nickname" :disabled="isGlobalTerminal" />
             </a-form-item>
@@ -318,9 +340,11 @@ defineExpose({
                 {{ t("TXT_CODE_2f291d8b") }}
               </a-typography-title>
               <a-typography-paragraph>
-                <a-typography-text type="secondary">
-                  {{ t("TXT_CODE_be608c82") }}
-                </a-typography-text>
+                <a-tooltip :title="t('TXT_CODE_be608c82')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    {{ t("TXT_CODE_be608c82") }}
+                  </a-typography-text>
+                </a-tooltip>
               </a-typography-paragraph>
               <a-select
                 v-model:value="options.config.type"
@@ -342,9 +366,11 @@ defineExpose({
             <a-form-item>
               <a-typography-title :level="5">{{ t("TXT_CODE_fa920c0") }}</a-typography-title>
               <a-typography-paragraph>
-                <a-typography-text type="secondary">
-                  {{ t("TXT_CODE_b029a155") }}
-                </a-typography-text>
+                <a-tooltip :title="t('TXT_CODE_b029a155')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    {{ t("TXT_CODE_b029a155") }}
+                  </a-typography-text>
+                </a-tooltip>
               </a-typography-paragraph>
               <a-date-picker
                 v-model:value="options.dayjsEndTime"
@@ -363,10 +389,12 @@ defineExpose({
                 {{ t("TXT_CODE_d12fa808") }}
               </a-typography-title>
               <a-typography-paragraph>
-                <a-typography-text type="secondary">
-                  <!-- eslint-disable-next-line vue/no-v-html -->
-                  <span v-html="t('TXT_CODE_A0000001')"></span>
-                </a-typography-text>
+                <a-tooltip :title="t('TXT_CODE_A0000001')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    <!-- eslint-disable-next-line vue/no-v-html -->
+                    <span v-html="t('TXT_CODE_A0000001')"></span>
+                  </a-typography-text>
+                </a-tooltip>
               </a-typography-paragraph>
               <a-input-group compact style="display: flex">
                 <a-textarea
@@ -386,9 +414,11 @@ defineExpose({
                 {{ t("TXT_CODE_ee67e1a3") }}
               </a-typography-title>
               <a-typography-paragraph>
-                <a-typography-text type="secondary">
-                  {{ t("TXT_CODE_962d9320") }}
-                </a-typography-text>
+                <a-tooltip :title="t('TXT_CODE_962d9320')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    {{ t("TXT_CODE_962d9320") }}
+                  </a-typography-text>
+                </a-tooltip>
               </a-typography-paragraph>
               <a-input v-model:value="options.config.cwd" />
             </a-form-item>
@@ -397,12 +427,14 @@ defineExpose({
             <a-form-item>
               <a-typography-title :level="5">{{ t("TXT_CODE_bb0b9711") }}</a-typography-title>
               <a-typography-paragraph>
-                <a-typography-text type="secondary">
-                  <span>{{ t("TXT_CODE_4f387c5a") }}</span>
-                  <br />
-                  <!-- eslint-disable-next-line vue/no-v-html -->
-                  <span v-html="updateCommandDesc"> </span>
-                </a-typography-text>
+                <a-tooltip :title="updateCommandDesc" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    <span>{{ t("TXT_CODE_4f387c5a") }}</span>
+                    <br />
+                    <!-- eslint-disable-next-line vue/no-v-html -->
+                    <span v-html="updateCommandDesc"> </span>
+                  </a-typography-text>
+                </a-tooltip>
               </a-typography-paragraph>
               <!-- eslint-disable-next-line vue/html-quotes -->
               <a-input
@@ -418,9 +450,14 @@ defineExpose({
                 {{ t("TXT_CODE_f041de90") }}
               </a-typography-title>
               <a-typography-paragraph>
-                <a-typography-text type="secondary">
-                  {{ t("TXT_CODE_6e69b5a5") }}
-                </a-typography-text>
+                <a-tooltip :title="t('TXT_CODE_6e69b5a5')" placement="top">
+                  <a-typography-text
+                    type="secondary"
+                    :class="[!isPhone && 'two-line-height', 'typography-text-ellipsis']"
+                  >
+                    {{ t("TXT_CODE_6e69b5a5") }}
+                  </a-typography-text>
+                </a-tooltip>
               </a-typography-paragraph>
               <a-select
                 v-model:value="options.config.fileCode"
@@ -431,6 +468,30 @@ defineExpose({
               </a-select>
             </a-form-item>
           </a-col>
+          <a-col :xs="24" :lg="16" :offset="0">
+            <a-form-item>
+              <a-typography-title :level="5">{{ t("TXT_CODE_fffaeb17") }}</a-typography-title>
+              <a-typography-paragraph>
+                <a-tooltip
+                  :title="t('TXT_CODE_fffaeb18') + '\n' + t('TXT_CODE_50a2b2d9')"
+                  placement="top"
+                >
+                  <a-typography-text
+                    type="secondary"
+                    :class="[!isPhone && 'two-line-height', 'typography-text-ellipsis']"
+                  >
+                    <span>{{ t("TXT_CODE_fffaeb18") }}</span>
+                  </a-typography-text>
+                </a-tooltip>
+              </a-typography-paragraph>
+              <a-input
+                v-model:value="options.config.runAs"
+                :placeholder="t('TXT_CODE_9aa83c05')"
+                :disabled="isGlobalTerminal"
+                style="width: 400px"
+              />
+            </a-form-item>
+          </a-col>
         </a-row>
         <a-row v-if="activeKey === TabSettings.Docker" :gutter="20">
           <a-col :xs="24" :lg="8" :offset="0">
@@ -439,9 +500,14 @@ defineExpose({
                 {{ t("TXT_CODE_61a8296e") }}
               </a-typography-title>
               <a-typography-paragraph>
-                <a-typography-text type="secondary" :class="!isPhone && 'two-line-height'">
-                  {{ t("TXT_CODE_2b221e02") }}
-                </a-typography-text>
+                <a-tooltip :title="t('TXT_CODE_2b221e02')" placement="top">
+                  <a-typography-text
+                    type="secondary"
+                    :class="[!isPhone && 'two-line-height', 'typography-text-ellipsis']"
+                  >
+                    {{ t("TXT_CODE_2b221e02") }}
+                  </a-typography-text>
+                </a-tooltip>
               </a-typography-paragraph>
               <div class="ml-4">
                 <a-switch
@@ -463,9 +529,14 @@ defineExpose({
                   {{ t("TXT_CODE_6904cb3") }}
                 </a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary" :class="!isPhone && 'two-line-height'">
-                    {{ t("TXT_CODE_ec734b5c") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_ec734b5c')" placement="top">
+                    <a-typography-text
+                      type="secondary"
+                      :class="[!isPhone && 'two-line-height', 'typography-text-ellipsis']"
+                    >
+                      {{ t("TXT_CODE_ec734b5c") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-select
                   v-model:value="options.config.docker.image"
@@ -492,9 +563,14 @@ defineExpose({
                   {{ t("TXT_CODE_4e4d9680") }}
                 </a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary" :class="!isPhone && 'two-line-height'">
-                    {{ t("TXT_CODE_4a570d32") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_4a570d32')" placement="top">
+                    <a-typography-text
+                      type="secondary"
+                      :class="[!isPhone && 'two-line-height', 'typography-text-ellipsis']"
+                    >
+                      {{ t("TXT_CODE_4a570d32") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-input
                   v-model:value="options.config.docker.image"
@@ -509,9 +585,14 @@ defineExpose({
                   {{ t("TXT_CODE_5484094a") }}
                 </a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary" :class="!isPhone && 'two-line-height'">
-                    {{ t("TXT_CODE_60dd05d5") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_60dd05d5')" placement="top">
+                    <a-typography-text
+                      type="secondary"
+                      :class="[!isPhone && 'two-line-height', 'typography-text-ellipsis']"
+                    >
+                      {{ t("TXT_CODE_60dd05d5") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-switch
                   v-model:checked="options.config.docker.changeWorkdir"
@@ -529,9 +610,14 @@ defineExpose({
               <a-form-item>
                 <a-typography-title :level="5">{{ t("TXT_CODE_81979d0f") }}</a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary" :class="!isPhone && 'two-line-height'">
-                    {{ t("TXT_CODE_c800cb31") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_c800cb31')" placement="top">
+                    <a-typography-text
+                      type="secondary"
+                      :class="[!isPhone && 'two-line-height', 'typography-text-ellipsis']"
+                    >
+                      {{ t("TXT_CODE_c800cb31") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-input
                   v-model:value="options.config.docker.workingDir"
@@ -544,9 +630,11 @@ defineExpose({
               <a-form-item>
                 <a-typography-title :level="5">{{ t("TXT_CODE_d9c73520") }}</a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_828ea87f") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_828ea87f')" placement="top">
+                    <a-typography-text type="secondary" class="typography-text-ellipsis">
+                      {{ t("TXT_CODE_828ea87f") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-input-group compact>
                   <a-button type="default" @click="() => handleEditDockerConfig('volume')">
@@ -560,9 +648,11 @@ defineExpose({
               <a-form-item>
                 <a-typography-title :level="5">{{ t("TXT_CODE_cf88c936") }}</a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_1a37f514") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_1a37f514')" placement="top">
+                    <a-typography-text type="secondary" class="typography-text-ellipsis">
+                      {{ t("TXT_CODE_1a37f514") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-input-group compact>
                   <a-button type="default" @click="() => handleEditDockerConfig('port')">
@@ -573,12 +663,37 @@ defineExpose({
             </a-col>
 
             <a-col :xs="24" :lg="8" :offset="0">
+              <a-form-item name="basePort">
+                <a-typography-title :level="5">
+                  {{ t("TXT_CODE_15f5fb07") }}
+                </a-typography-title>
+                <a-typography-paragraph>
+                  <a-tooltip :title="t('TXT_CODE_dfd06954')" placement="top">
+                    <a-typography-text type="secondary" class="typography-text-ellipsis">
+                      {{ t("TXT_CODE_dfd06954") }}
+                    </a-typography-text>
+                  </a-tooltip>
+                </a-typography-paragraph>
+                <a-input
+                  v-model:value="options.config.basePort"
+                  :min="0"
+                  :max="65535"
+                  :placeholder="t('TXT_CODE_3bb646e4')"
+                  :disabled="isGlobalTerminal"
+                  style="width: 100%"
+                />
+              </a-form-item>
+            </a-col>
+
+            <a-col :xs="24" :lg="8" :offset="0">
               <a-form-item>
                 <a-typography-title :level="5">{{ t("TXT_CODE_b916a8dc") }}</a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_33ce1c5c") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_33ce1c5c')" placement="top">
+                    <a-typography-text type="secondary" class="typography-text-ellipsis">
+                      {{ t("TXT_CODE_33ce1c5c") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-input-group compact>
                   <a-button type="default" @click="() => handleEditDockerConfig('env')">
@@ -589,67 +704,16 @@ defineExpose({
             </a-col>
 
             <a-col :xs="24" :lg="8" :offset="0">
-              <a-form-item>
-                <a-typography-title :level="5">{{ t("TXT_CODE_53046822") }}</a-typography-title>
-                <a-typography-paragraph>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_750ab5c6") }}
-                  </a-typography-text>
-                </a-typography-paragraph>
-                <a-tooltip placement="bottom">
-                  <template #title>
-                    {{ t("TXT_CODE_dce87e42") }}
-                  </template>
-                  <a-input
-                    v-model:value="options.config.docker.cpuUsage"
-                    :placeholder="t('TXT_CODE_91d857f5')"
-                  />
-                </a-tooltip>
-              </a-form-item>
-            </a-col>
-            <a-col :xs="24" :lg="8" :offset="0">
-              <a-form-item>
-                <a-typography-title :level="5">{{ t("TXT_CODE_b0c4e4ae") }}</a-typography-title>
-                <a-typography-paragraph>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_2b9e9b5") }}
-                  </a-typography-text>
-                </a-typography-paragraph>
-                <a-tooltip placement="bottom">
-                  <template #title>
-                    {{ t("TXT_CODE_67c765be") }}
-                  </template>
-                  <a-input
-                    v-model:value="options.config.docker.cpusetCpus"
-                    :placeholder="t('TXT_CODE_30fe1717')"
-                  />
-                </a-tooltip>
-              </a-form-item>
-            </a-col>
-            <a-col :xs="24" :lg="8" :offset="0">
-              <a-form-item>
-                <a-typography-title :level="5">{{ t("TXT_CODE_6fe24924") }}</a-typography-title>
-                <a-typography-paragraph>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_a0d214ac") }}
-                  </a-typography-text>
-                </a-typography-paragraph>
-                <a-input
-                  v-model:value="options.config.docker.memory"
-                  :placeholder="t('TXT_CODE_80790069')"
-                />
-              </a-form-item>
-            </a-col>
-
-            <a-col :xs="24" :lg="8" :offset="0">
               <a-form-item :name="['docker', 'networkMode']">
                 <a-typography-title :level="5" :class="{ 'require-field': isDockerMode }">
                   {{ t("TXT_CODE_efcef926") }}
                 </a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_38a430d8") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_38a430d8')" placement="top">
+                    <a-typography-text type="secondary" class="typography-text-ellipsis">
+                      {{ t("TXT_CODE_38a430d8") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-select
                   v-model:value="options.config.docker.networkMode"
@@ -694,9 +758,11 @@ defineExpose({
               <a-form-item>
                 <a-typography-title :level="5">{{ t("TXT_CODE_10194e6a") }}</a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_97655c5d") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_97655c5d')" placement="top">
+                    <a-typography-text type="secondary" class="typography-text-ellipsis">
+                      {{ t("TXT_CODE_97655c5d") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-input
                   v-model:value="options.networkAliasesText"
@@ -709,9 +775,11 @@ defineExpose({
               <a-form-item>
                 <a-typography-title :level="5">{{ t("TXT_CODE_c3a3b6b1") }}</a-typography-title>
                 <a-typography-paragraph>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_d1c78fbf") }}
-                  </a-typography-text>
+                  <a-tooltip :title="t('TXT_CODE_d1c78fbf')" placement="top">
+                    <a-typography-text type="secondary" class="typography-text-ellipsis">
+                      {{ t("TXT_CODE_d1c78fbf") }}
+                    </a-typography-text>
+                  </a-tooltip>
                 </a-typography-paragraph>
                 <a-tooltip placement="bottom">
                   <template #title>{{ t("TXT_CODE_8d4882b0") }}</template>
@@ -724,6 +792,105 @@ defineExpose({
             </a-col>
           </template>
         </a-row>
+        <a-row v-if="activeKey === TabSettings.ResLimit" :gutter="20">
+          <a-col :xs="24" :lg="8" :offset="0">
+            <a-form-item>
+              <a-typography-title :level="5">{{ t("TXT_CODE_53046822") }}</a-typography-title>
+              <a-typography-paragraph>
+                <a-tooltip :title="t('TXT_CODE_750ab5c6')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    {{ t("TXT_CODE_750ab5c6") }}
+                  </a-typography-text>
+                </a-tooltip>
+              </a-typography-paragraph>
+              <a-tooltip placement="bottom">
+                <template #title>
+                  {{ t("TXT_CODE_dce87e42") }}
+                </template>
+                <a-input
+                  v-model:value="options.config.docker.cpuUsage"
+                  :allow-clear="true"
+                  :placeholder="t('TXT_CODE_91d857f5')"
+                />
+              </a-tooltip>
+            </a-form-item>
+          </a-col>
+          <a-col :xs="24" :lg="8" :offset="0">
+            <a-form-item>
+              <a-typography-title :level="5">{{ t("TXT_CODE_b0c4e4ae") }}</a-typography-title>
+              <a-typography-paragraph>
+                <a-tooltip :title="t('TXT_CODE_2b9e9b5')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    {{ t("TXT_CODE_2b9e9b5") }}
+                  </a-typography-text>
+                </a-tooltip>
+              </a-typography-paragraph>
+              <a-tooltip placement="bottom">
+                <template #title>
+                  {{ t("TXT_CODE_67c765be") }}
+                </template>
+                <a-input
+                  v-model:value="options.config.docker.cpusetCpus"
+                  :allow-clear="true"
+                  :placeholder="t('TXT_CODE_30fe1717')"
+                />
+              </a-tooltip>
+            </a-form-item>
+          </a-col>
+          <a-col :xs="24" :lg="8" :offset="0">
+            <a-form-item>
+              <a-typography-title :level="5">{{ t("TXT_CODE_6fe24924") }}</a-typography-title>
+              <a-typography-paragraph>
+                <a-tooltip :title="t('TXT_CODE_a0d214ac')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    {{ t("TXT_CODE_a0d214ac") }}
+                  </a-typography-text>
+                </a-tooltip>
+              </a-typography-paragraph>
+              <a-input
+                v-model:value="options.config.docker.memory"
+                :allow-clear="true"
+                :placeholder="t('TXT_CODE_80790069')"
+              />
+            </a-form-item>
+          </a-col>
+
+          <a-col :xs="24" :lg="8" :offset="0">
+            <a-form-item>
+              <a-typography-title :level="5">{{ t("TXT_CODE_a68b3a9c") }}</a-typography-title>
+              <a-typography-paragraph>
+                <a-tooltip :title="t('TXT_CODE_b946a322')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    {{ t("TXT_CODE_b946a322") }}
+                  </a-typography-text>
+                </a-tooltip>
+              </a-typography-paragraph>
+              <a-input
+                v-model:value="options.config.docker.memorySwap"
+                :allow-clear="true"
+                :placeholder="t('TXT_CODE_6f1129fb')"
+              />
+            </a-form-item>
+          </a-col>
+
+          <a-col :xs="24" :lg="8" :offset="0">
+            <a-form-item>
+              <a-typography-title :level="5">{{ t("TXT_CODE_5c43374f") }}</a-typography-title>
+              <a-typography-paragraph>
+                <a-tooltip :title="t('TXT_CODE_a7885cbc')" placement="top">
+                  <a-typography-text type="secondary" class="typography-text-ellipsis">
+                    {{ t("TXT_CODE_a7885cbc") }}
+                  </a-typography-text>
+                </a-tooltip>
+              </a-typography-paragraph>
+              <a-input
+                v-model:value="options.config.docker.memorySwappiness"
+                :allow-clear="true"
+                :placeholder="t('TXT_CODE_6f1129fb')"
+              />
+            </a-form-item>
+          </a-col>
+        </a-row>
       </a-form>
     </div>
   </a-modal>
@@ -731,7 +898,13 @@ defineExpose({
 
 <style scoped>
 .two-line-height {
+}
+
+.typography-text-ellipsis {
   display: block;
-  height: 44px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 </style>

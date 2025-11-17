@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import type { LayoutCard } from "@/types";
-import { useLayoutCardTools } from "../../hooks/useCardTools";
-import { onMounted, computed } from "vue";
-import { t } from "@/lang/i18n";
 import { useInstanceInfo } from "@/hooks/useInstance";
+import { t } from "@/lang/i18n";
+import type { LayoutCard } from "@/types";
 import { CheckCircleOutlined, ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { computed, onMounted, ref } from "vue";
 import { GLOBAL_INSTANCE_NAME } from "../../config/const";
+import { useLayoutCardTools } from "../../hooks/useCardTools";
 import { parseTimestamp } from "../../tools/time";
-import { dockerPortsArray } from "@/tools/common";
 import DockerInfo from "./dialogs/DockerInfo.vue";
 
 const props = defineProps<{
@@ -90,6 +88,10 @@ onMounted(async () => {
           <a-tag color="purple" class="tag">
             {{ t("TXT_CODE_ad30f3c5") }}{{ instanceInfo?.started }}
           </a-tag>
+          
+          <a-tag color="purple" class="tag">
+            {{ t("TXT_CODE_6420023d") }}{{ instanceInfo?.autoRestarted }}
+          </a-tag>
 
           <!-- real tags -->
           <a-tag v-for="tag in instanceInfo?.config.tag" :key="tag" class="tag" color="blue">
@@ -111,26 +113,20 @@ onMounted(async () => {
         </span>
       </a-typography-paragraph>
 
-      <a-typography-paragraph>
-        {{ t("TXT_CODE_46f575ae") }}{{ parseTimestamp(instanceInfo?.config.lastDatetime) }}
-      </a-typography-paragraph>
-      <a-typography-paragraph v-if="instanceInfo?.config.processType === 'docker'">
-        {{ t("TXT_CODE_4f917a65") }}
-        <a href="javascript:;" @click="DockerInfoDialog?.openDialog()">
-          {{ t("TXT_CODE_530f5951") }}
-        </a>
-      </a-typography-paragraph>
+      <template v-if="instanceInfo?.config.processType === 'docker'">
+        <a-typography-paragraph>
+          {{ t("TXT_CODE_4f917a65") }}
+          <a href="javascript:;" @click="DockerInfoDialog?.openDialog()">
+            {{ t("TXT_CODE_530f5951") }}
+          </a>
+        </a-typography-paragraph>
+      </template>
 
-      <a-typography-paragraph
-        v-if="
-          instanceInfo?.config.processType === 'docker' &&
-          Number(instanceInfo?.config.docker.ports?.length) > 0
-        "
-      >
+      <a-typography-paragraph v-if="Number(instanceInfo?.info?.allocatedPorts?.length) > 0">
         {{ t("TXT_CODE_2e4469f6") }}
         <div style="padding: 10px 0px 0px 16px">
           <div
-            v-for="(item, index) in dockerPortsArray(instanceInfo?.config.docker.ports ?? [])"
+            v-for="(item, index) in instanceInfo?.info?.allocatedPorts"
             :key="index"
             class="mb-4"
           >
@@ -144,12 +140,16 @@ onMounted(async () => {
           </div>
         </div>
       </a-typography-paragraph>
+
       <a-typography-paragraph>
         <span>{{ t("TXT_CODE_ae747cc0") }}</span>
         <span>{{ parseTimestamp(instanceInfo?.config.endTime) || t("TXT_CODE_e3a77a77") }}</span>
       </a-typography-paragraph>
       <a-typography-paragraph v-if="!instanceGameServerInfo">
         {{ t("TXT_CODE_8b8e08a6") }}{{ parseTimestamp(instanceInfo?.config.createDatetime) }}
+      </a-typography-paragraph>
+      <a-typography-paragraph>
+        {{ t("TXT_CODE_46f575ae") }}{{ parseTimestamp(instanceInfo?.config.lastDatetime) }}
       </a-typography-paragraph>
       <a-typography-paragraph v-if="!instanceGameServerInfo">
         <span>{{ t("TXT_CODE_cec321b4") }}{{ instanceInfo?.config.oe.toUpperCase() }} </span>

@@ -1,13 +1,14 @@
 import Router from "@koa/router";
+import { FILENAME_BLACKLIST } from "../const";
+import { ROLE } from "../entity/user";
+import { $t } from "../i18n";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
-import RemoteServiceSubsystem from "../service/remote_service";
-import RemoteRequest from "../service/remote_command";
+import { operationLogger } from "../service/operation_logger";
 import { getUserUuid } from "../service/passport_service";
 import { isHaveInstanceByUuid } from "../service/permission_service";
-import { FILENAME_BLACKLIST } from "../const";
-import { $t } from "../i18n";
-import { ROLE } from "../entity/user";
+import RemoteRequest from "../service/remote_command";
+import RemoteServiceSubsystem from "../service/remote_service";
 const router = new Router({ prefix: "/protected_schedule" });
 
 // Routing permission verification middleware
@@ -53,7 +54,7 @@ router.post(
   permission({ level: ROLE.USER }),
   validator({
     query: { daemonId: String, uuid: String },
-    body: { name: String, count: Number, time: String, action: String, type: Number }
+    body: { name: String, count: Number, time: String, actions: Array, type: Number }
   }),
   async (ctx) => {
     try {
@@ -67,6 +68,14 @@ router.post(
         if (name.includes(ch)) throw new Error($t("TXT_CODE_router.schedule.invalidName"));
       });
 
+      operationLogger.log("instance_task_create", {
+        operator_ip: ctx.ip,
+        operator_name: ctx.session?.["userName"],
+        instance_id: instanceUuid,
+        daemon_id: daemonId,
+        task_name: name
+      });
+
       ctx.body = await new RemoteRequest(RemoteServiceSubsystem.getInstance(daemonId)).request(
         "schedule/register",
         {
@@ -74,8 +83,7 @@ router.post(
           name,
           count: Number(task.count),
           time: String(task.time),
-          action: String(task.action),
-          payload: String(task.payload),
+          actions: task.actions,
           type: Number(task.type)
         }
       );
@@ -96,6 +104,15 @@ router.delete(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const name = String(ctx.query.task_name);
+
+      operationLogger.log("instance_task_delete", {
+        operator_ip: ctx.ip,
+        operator_name: ctx.session?.["userName"],
+        instance_id: instanceUuid,
+        daemon_id: daemonId,
+        task_name: name
+      });
+
       ctx.body = await new RemoteRequest(RemoteServiceSubsystem.getInstance(daemonId)).request(
         "schedule/delete",
         {

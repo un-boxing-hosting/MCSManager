@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { onMounted, ref, reactive } from "vue";
 import CardPanel from "@/components/CardPanel.vue";
-import { getCurrentLang, t } from "@/lang/i18n";
-import { panelInstall } from "@/services/apis";
-import { reportErrorMsg } from "@/tools/validator";
-import type { FormInstance } from "ant-design-vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
+import {
+  getInitLanguage,
+  initInstallPageFlow,
+  setLanguage,
+  SUPPORTED_LANGS,
+  t,
+  toStandardLang
+} from "@/lang/i18n";
+import { panelInstall } from "@/services/apis";
 import { useAppStateStore } from "@/stores/useAppStateStore";
+import { reportErrorMsg } from "@/tools/validator";
+import { ArrowRightOutlined } from "@ant-design/icons-vue";
+import type { FormInstance } from "ant-design-vue";
+import { reactive, ref } from "vue";
 
 const skeletons = [
   { span: 6, rows: 4 },
@@ -22,13 +30,13 @@ const skeletons = [
 
 const { updateUserInfo, updatePanelStatus, state: appState } = useAppStateStore();
 
-const step = ref(1);
+const step = ref(0);
 const { toPage } = useAppRouters();
 const formRef = ref<FormInstance>();
 const formData = reactive({
   username: "",
   password: "",
-  language: getCurrentLang()
+  language: getInitLanguage()
 });
 
 const { execute: createAdminUser } = panelInstall();
@@ -54,13 +62,19 @@ const createUser = async () => {
   }
 };
 
+const setLang = (lang: string) => {
+  lang = toStandardLang(lang);
+  initInstallPageFlow(lang);
+  setLanguage(formData.language, false);
+};
+
 const toQuickStart = () => {
   toPage({
-    path: "/quickstart",
+    path: "/market",
     query: {
       from_install: 1
     }
-  });
+  }).then(() => window.location.reload());
 };
 
 const toOverview = () => {
@@ -69,10 +83,8 @@ const toOverview = () => {
     query: {
       from_install: 1
     }
-  });
+  }).then(() => window.location.reload());
 };
-
-onMounted(async () => {});
 </script>
 
 <template>
@@ -85,6 +97,52 @@ onMounted(async () => {});
       </CardPanel>
     </a-col>
   </a-row>
+  <div v-if="step === 0" class="install-page-container">
+    <CardPanel :full-height="false" class="install-panel language-select-panel">
+      <template #body>
+        <a-typography style="text-align: center; margin-bottom: 40px">
+          <a-typography-title :level="2" style="margin-bottom: 8px"> Language </a-typography-title>
+          <a-typography-text type="secondary"> Choose your preferred language </a-typography-text>
+        </a-typography>
+
+        <div class="language-grid">
+          <div
+            v-for="lang in SUPPORTED_LANGS"
+            :key="lang.value"
+            class="language-card"
+            :class="{ 'language-card-active': formData.language === lang.value }"
+            @click="
+              () => {
+                formData.language = lang.value;
+                setLang(formData.language);
+              }
+            "
+          >
+            <div class="language-card-inner language-label">
+              {{ lang.label }}
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px">
+          <a-button
+            type="primary"
+            size="large"
+            style="min-width: 160px; height: 48px; font-size: 16px"
+            @click="
+              () => {
+                setLang(formData.language);
+                step++;
+              }
+            "
+          >
+            {{ t("TXT_CODE_5e9022f8") }}
+            <ArrowRightOutlined />
+          </a-button>
+        </div>
+      </template>
+    </CardPanel>
+  </div>
   <div v-if="step === 1" class="install-page-container" style="text-align: center">
     <CardPanel :full-height="false" class="install-panel">
       <template #body>
@@ -104,20 +162,19 @@ onMounted(async () => {});
           class="mt-45 mb-45"
           type="primary"
           size="large"
-          @click="step = 2"
         >
           {{ t("TXT_CODE_3371000d") }}
         </a-button>
-        <a-button v-else class="mt-45 mb-45" type="primary" size="large" @click="step = 2">
+        <a-button
+          v-else
+          class="mt-45 mb-45"
+          type="primary"
+          size="large"
+          style="min-width: 160px; height: 48px; font-size: 16px"
+          @click="step = 2"
+        >
           {{ t("TXT_CODE_351aaf7") }}
         </a-button>
-        <!-- <div style="flex">
-          <a-select v-model:value="formData.language" class="mr-6" :style="{ minWidth: '200px' }">
-            <a-select-option v-for="item in SUPPORTED_LANGS" :key="item.value" :value="item.value">
-              {{ item.label }}
-            </a-select-option>
-          </a-select>
-        </div> -->
       </template>
     </CardPanel>
   </div>
@@ -224,12 +281,123 @@ onMounted(async () => {});
   .install-panel {
     transition: all 0.6s;
     max-width: 480px;
-    // max-height: 420px;
     width: 100%;
     background-color: var(--login-panel-bg);
     backdrop-filter: saturate(120%) blur(12px);
     padding: 40px;
   }
+
+  .language-select-panel {
+    max-width: 640px;
+  }
+}
+
+.language-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 0 20px;
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+    padding: 0 10px;
+  }
+}
+
+.language-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 16px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--color-gray-3);
+  background: var(--color-gray-4);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(24, 144, 255, 0.1) 0%, rgba(24, 144, 255, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    border-color: var(--color-gray-4);
+
+    &::before {
+      opacity: 0.5;
+    }
+  }
+}
+
+.language-card-active {
+  border-color: #1890ff !important;
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.15) 0%, rgba(24, 144, 255, 0.08) 100%);
+
+  &::before {
+    opacity: 1 !important;
+  }
+
+  .language-check {
+    background: #1890ff;
+    border-color: #1890ff;
+  }
+
+  .check-icon {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .language-label {
+    text-align: center;
+    color: #1890ff;
+  }
+}
+
+.language-card-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.language-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 0px solid var(--color-gray-4);
+  background-color: var(--color-gray-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.check-icon {
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.language-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-1);
+  transition: all 0.3s ease;
 }
 
 .final-btn {

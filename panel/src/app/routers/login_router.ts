@@ -11,6 +11,7 @@ import axios from "axios";
 import { GlobalVariable } from "mcsmanager-common";
 import { ROLE } from "../entity/user";
 import SystemConfig from "../entity/setting";
+import { operationLogger } from "../service/operation_logger";
 
 const router = new Router({ prefix: "/auth" });
 
@@ -28,12 +29,22 @@ router.post(
     if (check(ctx)) return (ctx.body = "Logined");
     try {
       ctx.body = login(ctx, userName, passWord, code);
+      operationLogger.info("user_login", {
+        operator_ip: ctx.ip,
+        operator_name: userName,
+        login_result: true
+      });
     } catch (error: any) {
       if (error instanceof TwoFactorError && !code) {
         ctx.body = "NEED_2FA";
         return;
       }
       ctx.body = error;
+      operationLogger.warning("user_login", {
+        operator_ip: ctx.ip,
+        operator_name: userName,
+        login_result: false
+      });
     }
   }
 );
@@ -80,7 +91,8 @@ router.all(
         allowUsePreset: systemConfig?.allowUsePreset || false,
         businessMode: systemConfig?.businessMode || false,
         businessId: systemConfig?.businessId || null,
-        allowChangeCmd: systemConfig?.allowChangeCmd || false
+        allowChangeCmd: systemConfig?.allowChangeCmd || false,
+        panelId: systemConfig?.panelId || null
       } as Partial<SystemConfig>
     };
   }
@@ -103,6 +115,11 @@ router.all(
         userName,
         passWord,
         permission: 10
+      });
+      operationLogger.log("user_create", {
+        operator_ip: ctx.ip,
+        operator_name: userName,
+        target_user_name: userName
       });
       login(ctx, userName, passWord);
       return (ctx.body = true);
