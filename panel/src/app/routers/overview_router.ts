@@ -1,45 +1,47 @@
 import Router from "@koa/router";
-import permission from "../middleware/permission";
-import RemoteServiceSubsystem from "../service/remote_service";
-import VisualDataSubsystem from "../service/visual_data";
-import RemoteRequest from "../service/remote_command";
+import { GlobalVariable, systemInfo } from "mcsmanager-common";
 import os from "os";
-import { systemInfo } from "mcsmanager-common";
-import { getVersion, specifiedDaemonVersion } from "../version";
-import { GlobalVariable } from "mcsmanager-common";
 import { ROLE } from "../entity/user";
+import permission from "../middleware/permission";
+import { operationLogger } from "../service/operation_logger";
 import {
-  LOGIN_FAILED_KEY,
+  BAN_IP_COUNT,
   ILLEGAL_ACCESS_KEY,
   LOGIN_COUNT,
-  LOGIN_FAILED_COUNT_KEY,
-  BAN_IP_COUNT
+  LOGIN_FAILED_COUNT_KEY
 } from "../service/passport_service";
+import RemoteRequest from "../service/remote_command";
+import RemoteServiceSubsystem from "../service/remote_service";
+import VisualDataSubsystem from "../service/visual_data";
+import { getVersion, specifiedDaemonVersion } from "../version";
 
 const router = new Router({ prefix: "/overview" });
 
 // [Top-level Permission]
 // Control panel home page information overview routing
 router.get("/", permission({ level: ROLE.ADMIN, token: false }), async (ctx) => {
-  // Get the information of the remote service
-  const remoteInfoList = new Array();
-  for (const iterator of RemoteServiceSubsystem.services.entries()) {
-    const remoteService = iterator[1];
-    let remoteInfo: any = {};
-    try {
-      remoteInfo = await new RemoteRequest(remoteService).request("info/overview");
-    } catch (err) {
-      // ignore request errors and continue looping
+  // Get the information of the remote service concurrently
+  const requestTasks = Array.from(RemoteServiceSubsystem.services.entries()).map(
+    async ([_, remoteService]) => {
+      let remoteInfo: any = {};
+      try {
+        remoteInfo = await new RemoteRequest(remoteService).request("info/overview");
+      } catch (err) {
+        // ignore request errors and continue looping
+      }
+      // assign some identifier value
+      remoteInfo.uuid = remoteService.uuid;
+      remoteInfo.ip = remoteService.config.ip;
+      remoteInfo.port = remoteService.config.port;
+      remoteInfo.prefix = remoteService.config.prefix;
+      remoteInfo.available = remoteService.available;
+      remoteInfo.remarks = remoteService.config.remarks;
+      remoteInfo.remoteMappings = remoteService.config.remoteMappings;
+      return remoteInfo;
     }
-    // assign some identifier value
-    remoteInfo.uuid = remoteService.uuid;
-    remoteInfo.ip = remoteService.config.ip;
-    remoteInfo.port = remoteService.config.port;
-    remoteInfo.prefix = remoteService.config.prefix;
-    remoteInfo.available = remoteService.available;
-    remoteInfo.remarks = remoteService.config.remarks;
-    remoteInfoList.push(remoteInfo);
-  }
+  );
+
+  const remoteInfoList = await Promise.all(requestTasks);
   const selfInfo = systemInfo();
   // Get the information of the system where the panel is located
   const overviewData: IPanelOverviewResponse = {
@@ -80,6 +82,19 @@ router.get("/", permission({ level: ROLE.ADMIN, token: false }), async (ctx) => 
   };
 
   ctx.body = overviewData;
+});
+
+// [Top-level Permission]
+// Get user operation logs
+router.get("/operation_logs", permission({ level: ROLE.ADMIN }), async (ctx) => {
+  const limit = +(ctx?.query?.limit || 20);
+
+  if (isNaN(limit)) return ctx.throw(400, "Invalid limit value. It must be a number.");
+
+  if (limit <= 0 || limit > 200)
+    return ctx.throw(400, "Invalid limit value. It must be between 1 and 200.");
+
+  ctx.body = await operationLogger.get(limit);
 });
 
 export default router;

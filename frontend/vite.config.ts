@@ -1,11 +1,11 @@
 import { fileURLToPath, URL } from "node:url";
 
-import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
-import Components from "unplugin-vue-components/vite";
-import { AntDesignVueResolver } from "unplugin-vue-components/resolvers";
 import { visualizer } from "rollup-plugin-visualizer";
+import { AntDesignVueResolver } from "unplugin-vue-components/resolvers";
+import Components from "unplugin-vue-components/vite";
+import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -33,7 +33,7 @@ export default defineConfig({
           if (path.includes("node_modules/vue") || path.includes("node_modules/@vue")) {
             return "vue";
           }
-          if (path.includes("node_modules/xterm")) {
+          if (path.includes("node_modules/@xterm")) {
             return "xterm";
           }
           if (path.includes("node_modules/@codemirror")) {
@@ -50,6 +50,7 @@ export default defineConfig({
     }
   },
   server: {
+    allowedHosts: true,
     proxy: {
       "/api": {
         target: "http://localhost:23333",

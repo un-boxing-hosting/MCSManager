@@ -1,20 +1,20 @@
-import { setUpTerminalStreamChannel } from "@/services/apis/instance";
-import { parseForwardAddress } from "@/tools/protocol";
-import { computed, onMounted, onUnmounted, ref, unref } from "vue";
-import { io } from "socket.io-client";
-import type { Socket } from "socket.io-client";
-import { Modal } from "ant-design-vue";
-import { t } from "@/lang/i18n";
-import EventEmitter from "eventemitter3";
-import type { DefaultEventsMap } from "@socket.io/component-emitter";
-import type { InstanceDetail } from "@/types";
-import { Terminal } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
-import { INSTANCE_STATUS_CODE } from "@/types/const";
-import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
-import { useCommandHistory } from "@/hooks/useCommandHistory";
-import { removeTrail } from "@/tools/string";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
+import { useCommandHistory } from "@/hooks/useCommandHistory";
+import { t } from "@/lang/i18n";
+import { setUpTerminalStreamChannel } from "@/services/apis/instance";
+import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { mapDaemonAddress, parseForwardAddress } from "@/tools/protocol";
+import type { InstanceDetail } from "@/types";
+import { INSTANCE_STATUS_CODE } from "@/types/const";
+import type { DefaultEventsMap } from "@socket.io/component-emitter";
+import { CanvasAddon } from "@xterm/addon-canvas";
+import { FitAddon } from "@xterm/addon-fit";
+import { WebglAddon } from "@xterm/addon-webgl";
+import { Terminal } from "@xterm/xterm";
+import EventEmitter from "eventemitter3";
+import type { Socket } from "socket.io-client";
+import { computed, onMounted, onUnmounted, ref, unref } from "vue";
+import { makeSocketIo } from "./useSocketIo";
 
 export const TERM_COLOR = {
   TERM_RESET: "\x1B[0m",
@@ -54,8 +54,10 @@ export interface StdoutData {
 
 const { setHistory } = useCommandHistory();
 
+export type UseTerminalHook = ReturnType<typeof useTerminal>;
+
 export function useTerminal() {
-  const { hasBgImage } = useLayoutConfigStore();
+  const { hasBgImage } = useAppConfigStore();
 
   const events = new EventEmitter();
   let socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
@@ -69,6 +71,10 @@ export function useTerminal() {
     return state.value?.config.nickname === GLOBAL_INSTANCE_NAME;
   });
 
+  const isDockerMode = computed(() => {
+    return state.value?.config.processType === "docker";
+  });
+
   let fitAddonTask: NodeJS.Timer;
   let cachedSize = {
     w: 160,
@@ -77,6 +83,11 @@ export function useTerminal() {
 
   const execute = async (config: UseTerminalParams) => {
     isReady.value = false;
+
+    if (socket) {
+      return socket;
+    }
+
     const res = await setUpTerminalStreamChannel().execute({
       params: {
         daemonId: config.daemonId,
@@ -86,19 +97,19 @@ export function useTerminal() {
     const remoteInfo = unref(res.value);
     if (!remoteInfo) throw new Error(t("TXT_CODE_181f2f08"));
 
-    const addr = parseForwardAddress(remoteInfo?.addr, "ws");
-    socketAddress.value = addr;
+    let addr = remoteInfo.addr,
+      prefix = remoteInfo.prefix;
+    if (remoteInfo.remoteMappings) {
+      const mapped = mapDaemonAddress(remoteInfo.remoteMappings);
+      if (mapped) {
+        addr = mapped.addr;
+        prefix = mapped.prefix;
+      }
+    }
+    socketAddress.value = parseForwardAddress(addr, "ws");
     const password = remoteInfo.password;
 
-    socket = io(addr, {
-      path: (!!remoteInfo.prefix ? removeTrail(remoteInfo.prefix, "/") : "") + "/socket.io",
-      multiplex: false,
-      reconnectionDelayMax: 1000 * 10,
-      timeout: 1000 * 30,
-      reconnection: true,
-      reconnectionAttempts: 3,
-      rejectUnauthorized: false
-    });
+    socket = makeSocketIo(addr, prefix);
 
     socket.on("connect", () => {
       console.log("[Socket.io] connect:", addr);
@@ -142,7 +153,7 @@ export function useTerminal() {
     });
 
     socket.on("disconnect", () => {
-      console.warn("[Socket.io] disconnect:", addr);
+      console.error("[Socket.io] disconnect:", addr);
       isConnect.value = false;
       events.emit("disconnect");
     });
@@ -168,7 +179,59 @@ export function useTerminal() {
     });
   };
 
+  const touchHandler = (event: TouchEvent) => {
+    const touches = event.changedTouches;
+    const first = touches[0];
+
+    let type = "";
+    switch (event.type) {
+      case "touchstart":
+        type = "mousedown";
+        break;
+      case "touchmove":
+        type = "mousemove";
+        break;
+      case "touchend":
+        type = "mouseup";
+        break;
+      default:
+        return;
+    }
+
+    const mouseEvent = new MouseEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      detail: 1,
+      screenX: first.screenX,
+      screenY: first.screenY,
+      clientX: first.clientX,
+      clientY: first.clientY,
+      ctrlKey: false,
+      altKey: false,
+      shiftKey: false,
+      metaKey: false,
+      button: 0,
+      relatedTarget: null
+    });
+
+    first.target.dispatchEvent(mouseEvent);
+    if (type === "mousedown") {
+      event.preventDefault();
+    }
+  };
+
   const initTerminalWindow = (element: HTMLElement) => {
+    if (terminal.value) {
+      throw new Error("Terminal already initialized, Please refresh the page!");
+    }
+
+    // init touch handler
+    element.addEventListener("touchstart", touchHandler, true);
+    element.addEventListener("touchmove", touchHandler, true);
+    element.addEventListener("touchend", touchHandler, true);
+    element.addEventListener("touchcancel", touchHandler, true);
+
     const background = hasBgImage.value ? "#00000000" : "#1e1e1e";
     const term = new Terminal({
       convertEol: true,
@@ -180,12 +243,51 @@ export function useTerminal() {
         background
       },
       allowProposedApi: true,
-      allowTransparency: true,
-      rendererType: "canvas"
+      allowTransparency: true
     });
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
+
+    terminal.value = term;
+
+    const gl = document.createElement("canvas").getContext("webgl2");
+    if (gl) {
+      // If WebGL2 is supported, use the WebGlAddon
+      const webglAddon = new WebglAddon();
+      webglAddon.onContextLoss((_) => {
+        webglAddon.dispose();
+      });
+      term.loadAddon(webglAddon);
+    } else {
+      // If WebGL2 is not supported, use the CanvasAddon
+      const canvasAddon = new CanvasAddon();
+      term.loadAddon(canvasAddon);
+    }
+
     term.open(element);
+
+    // If text is selected, copy it. Otherwise, fallback to default behavior.
+    term.attachCustomKeyEventHandler((arg) => {
+      if (arg.type === "keydown" && arg.ctrlKey && arg.code === "KeyC") {
+        const selection = term.getSelection();
+        if (selection) {
+          // If not in SecureContext, writeText will fail. Fallback to browser's default copy behavior, but selection won't be cleared.
+          if (window.isSecureContext) {
+            arg.preventDefault()
+          }
+
+          navigator.clipboard?.writeText(selection).then(() => {
+             term.clearSelection();
+          }).catch(err => {
+             console.error("Could not copy text: ", err);
+          });
+
+          return false;
+        }
+      }
+
+      return true;
+    });
 
     // Auto resize pty win size
     fitAddon.fit();
@@ -203,12 +305,20 @@ export function useTerminal() {
         data: { input: data }
       });
     }
+
     term.onData((data) => {
+      // If the PTY terminal is disabled, no input is sent.
+      if (
+        state.value?.config.terminalOption?.pty === false ||
+        state.value?.status === INSTANCE_STATUS_CODE.STOPPED
+      ) {
+        return;
+      }
+
       if (data !== "\x03") {
         lastCtrlCTime = 0;
         return sendInput(data);
       }
-
       const now = Date.now();
       if (now - lastCtrlCTime < ctrlCTimeThreshold) {
         term.write("\r\n" + t("TXT_CODE_3725b37b") + "\r\n");
@@ -220,8 +330,11 @@ export function useTerminal() {
       }
     });
 
-    terminal.value = term;
     return term;
+  };
+
+  const clearTerminal = () => {
+    terminal.value?.clear();
   };
 
   events.on("stdout", (v: StdoutData) => {
@@ -271,10 +384,11 @@ export function useTerminal() {
     socketAddress,
     isConnect,
     isGlobalTerminal,
-
+    isDockerMode,
     execute,
     initTerminalWindow,
-    sendCommand
+    sendCommand,
+    clearTerminal
   };
 }
 

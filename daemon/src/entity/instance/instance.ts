@@ -1,20 +1,24 @@
-import { $t } from "../../i18n";
-import iconv from "iconv-lite";
-import path from "path";
+import { randomUUID } from "crypto";
 import { EventEmitter } from "events";
-import { IExecutable } from "./preset";
-import InstanceCommand from "../commands/base/command";
-import InstanceConfig from "./Instance_config";
-import StorageSubsystem from "../../common/system_storage";
-import { LifeCycleTaskManager } from "./life_cycle";
-import { PresetCommandManager } from "./preset";
-import FunctionDispatcher, { IPresetCommand } from "../commands/dispatcher";
-import { IInstanceProcess } from "./interface";
-import StartCommand from "../commands/start";
-import { configureEntityParams, toText } from "mcsmanager-common";
-import { OpenFrp } from "../commands/task/openfrp";
-import logger from "../../service/log";
 import { t } from "i18next";
+import iconv from "iconv-lite";
+import { configureEntityParams } from "mcsmanager-common";
+import path from "path";
+import { CircularBuffer } from "../../common/string_cache";
+import StorageSubsystem from "../../common/system_storage";
+import { STEAM_CMD_PATH } from "../../const";
+import { $t } from "../../i18n";
+import javaManager from "../../service/java_manager";
+import logger from "../../service/log";
+import InstanceCommand from "../commands/base/command";
+import { commandStringToArray } from "../commands/base/command_parser";
+import FunctionDispatcher, { IPresetCommand } from "../commands/dispatcher";
+import { OpenFrp } from "../commands/task/openfrp";
+import { globalConfiguration } from "../config";
+import InstanceConfig from "./Instance_config";
+import { IInstanceProcess } from "./interface";
+import { LifeCycleTaskManager } from "./life_cycle";
+import { IExecutable, PresetCommandManager } from "./preset";
 
 interface IInstanceInfo {
   mcPingOnline: boolean;
@@ -22,9 +26,20 @@ interface IInstanceInfo {
   maxPlayers: number;
   version: string;
   fileLock: number;
-  playersChart: Array<{ value: string }>;
+  playersChart: { value: string }[];
   openFrpStatus: boolean;
   latency: number;
+  cpuUsage?: number;
+  memoryUsagePercent?: number;
+  rxBytes?: number;
+  txBytes?: number;
+  readBytes?: number;
+  writeBytes?: number;
+  memoryUsage?: number;
+  memoryLimit?: number;
+  storageUsage?: number;
+  storageLimit?: number;
+  allocatedPorts?: { host: number; container: number; protocol: string }[];
 }
 
 interface IWatcherInfo {
@@ -34,7 +49,6 @@ interface IWatcherInfo {
   };
 }
 
-const LINE_MAX_SIZE = 1024;
 const TERM_TEXT_YELLOW = "\x1B[0;33;1m";
 const TERM_TEXT_GOLD = "\x1B[0;33m"; // Gold §6
 const TERM_RESET = "\x1B[0m";
@@ -64,6 +78,7 @@ export default class Instance extends EventEmitter {
   public instanceUuid: string = "";
   public lock: boolean = false;
   public startCount: number = 0;
+  public autoRestartCount: number = 0;
   public startTimestamp: number = 0;
   public asynchronousTask?: IExecutable | null;
   public openFrp?: OpenFrp;
@@ -81,15 +96,16 @@ export default class Instance extends EventEmitter {
     fileLock: 0,
     playersChart: [],
     openFrpStatus: false,
-    latency: 0
+    latency: 0,
+    allocatedPorts: []
   };
 
   public watchers: Map<string, IWatcherInfo> = new Map();
 
   public process?: IInstanceProcess;
 
-  private outputStack: string[] = [];
   private outputLoopTask?: NodeJS.Timeout;
+  private outputBuffer = new CircularBuffer<string>(64);
 
   // When initializing an instance, the instance must be initialized through uuid and configuration class, otherwise the instance will be unavailable
   constructor(instanceUuid: string, config: InstanceConfig) {
@@ -183,6 +199,7 @@ export default class Instance extends EventEmitter {
     configureEntityParams(this.config, cfg, "startCommand", String);
     configureEntityParams(this.config, cfg, "stopCommand", String);
     configureEntityParams(this.config, cfg, "updateCommand", String);
+    configureEntityParams(this.config, cfg, "runAs", String);
     configureEntityParams(this.config, cfg, "cwd", String);
     configureEntityParams(this.config, cfg, "ie", String);
     configureEntityParams(this.config, cfg, "oe", String);
@@ -193,6 +210,7 @@ export default class Instance extends EventEmitter {
     configureEntityParams(this.config, cfg, "rconPort", Number);
     configureEntityParams(this.config, cfg, "rconIp", String);
     configureEntityParams(this.config, cfg, "category", Number);
+    configureEntityParams(this.config, cfg, "basePort", Number);
 
     if (cfg.docker) {
       configureEntityParams(this.config.docker, cfg.docker, "containerName", String);
@@ -208,8 +226,15 @@ export default class Instance extends EventEmitter {
       configureEntityParams(this.config.docker, cfg.docker, "cpusetCpus", String);
       configureEntityParams(this.config.docker, cfg.docker, "cpuUsage", Number);
       configureEntityParams(this.config.docker, cfg.docker, "env");
+      configureEntityParams(this.config.docker, cfg.docker, "labels");
       configureEntityParams(this.config.docker, cfg.docker, "workingDir", String);
       configureEntityParams(this.config.docker, cfg.docker, "changeWorkdir", Boolean);
+      configureEntityParams(this.config.docker, cfg.docker, "memorySwappiness", Number);
+      configureEntityParams(this.config.docker, cfg.docker, "memorySwap", Number);
+      configureEntityParams(this.config.docker, cfg.docker, "capAdd");
+      configureEntityParams(this.config.docker, cfg.docker, "capDrop");
+      configureEntityParams(this.config.docker, cfg.docker, "devices");
+      configureEntityParams(this.config.docker, cfg.docker, "privileged", Boolean);
     }
     if (cfg.pingConfig) {
       configureEntityParams(this.config.pingConfig, cfg.pingConfig, "ip", String);
@@ -219,13 +244,73 @@ export default class Instance extends EventEmitter {
     if (cfg.eventTask) {
       configureEntityParams(this.config.eventTask, cfg.eventTask, "autoStart", Boolean);
       configureEntityParams(this.config.eventTask, cfg.eventTask, "autoRestart", Boolean);
+      configureEntityParams(this.config.eventTask, cfg.eventTask, "autoRestartMaxTimes", Number);
       configureEntityParams(this.config.eventTask, cfg.eventTask, "ignore", Boolean);
     }
     if (cfg.terminalOption) {
       configureEntityParams(this.config.terminalOption, cfg.terminalOption, "haveColor", Boolean);
     }
 
-    if (persistence) StorageSubsystem.store("InstanceConfig", this.instanceUuid, this.config);
+    if (cfg.startCommand && commandStringToArray(cfg.startCommand)[0] != "{mcsm_java}") {
+      this.config.java.id = "";
+    } else if (cfg.java) {
+      configureEntityParams(this.config.java, cfg.java, "id", String);
+    }
+
+    if (persistence) {
+      if (!this.config.basePort) this.allocatePort(this.config);
+      StorageSubsystem.store("InstanceConfig", this.instanceUuid, this.config);
+    }
+  }
+
+  allocatePort(cfg: InstanceConfig) {
+    const globalCfg = globalConfiguration.config;
+    const [minPort, maxPort] = globalCfg.allocatablePortRange;
+
+    cfg.basePort = globalCfg.currentAllocatablePort;
+    globalCfg.currentAllocatablePort += globalCfg.portAssignInterval;
+
+    if (globalCfg.currentAllocatablePort > maxPort) {
+      globalCfg.currentAllocatablePort = minPort;
+    }
+
+    // Avoid port overlap with Daemon.
+    if (
+      cfg.basePort <= globalCfg.port &&
+      cfg.basePort + globalCfg.portAssignInterval >= globalCfg.port
+    ) {
+      cfg.basePort = globalCfg.port + 1;
+      globalCfg.currentAllocatablePort = cfg.basePort + globalCfg.portAssignInterval;
+    }
+
+    globalConfiguration.store();
+  }
+
+  resetConfigWithoutDocker() {
+    const newDockerCfg: IGlobalInstanceConfig["docker"] = JSON.parse(
+      JSON.stringify(this.config.docker)
+    );
+
+    const extendDockerCfg = newDockerCfg as any;
+
+    if (!extendDockerCfg?.isResetDockerCfg) {
+      // Delete some environment configurations specific to a certain image
+      // to avoid the newly generated configurations from having an adverse impact on new images.
+      delete newDockerCfg.image;
+      delete newDockerCfg.env;
+      delete newDockerCfg.ports;
+      delete newDockerCfg.workingDir;
+      delete newDockerCfg.changeWorkdir;
+      delete newDockerCfg.containerName;
+
+      // Reset some configurations
+      this.config.updateCommand = "";
+      this.config.startCommand = "";
+      this.config.stopCommand = "^C";
+      this.config.type = Instance.TYPE_UNIVERSAL;
+    }
+
+    this.config.docker = newDockerCfg;
   }
 
   setLock(bool: boolean) {
@@ -268,13 +353,16 @@ export default class Instance extends EventEmitter {
   // trigger failure event
   failure(error: Error) {
     this.emit("failure", error);
-    this.println("Operation Error", error.message ?? String(error));
+    this.println("ERROR", error.message ?? String(error));
     throw error;
   }
 
   // function that must be executed after the instance has been closed
   // trigger exit event
   stopped(code = 0) {
+    // Close all lifecycle tasks
+    this.stopOutputLoop();
+    this.println("INFO", $t("TXT_CODE_70ce6fbb"));
     this.releaseResources();
     if (this.instanceStatus != Instance.STATUS_STOP) {
       this.instanceStatus = Instance.STATUS_STOP;
@@ -283,22 +371,26 @@ export default class Instance extends EventEmitter {
       StorageSubsystem.store("InstanceConfig", this.instanceUuid, this.config);
     }
 
-    // Close all lifecycle tasks
-    this.stopOutputLoop();
     this.lifeCycleTaskManager.execLifeCycleTask(0);
 
     // If automatic restart is enabled, the startup operation is performed immediately
     if (!this.config.eventTask.ignore && this.config.eventTask.autoRestart) {
-      this.execPreset("start")
-        .then(() => {
-          this.println($t("TXT_CODE_instanceConf.info"), $t("TXT_CODE_instanceConf.autoRestart"));
-        })
-        .catch((err) => {
-          this.println(
-            $t("TXT_CODE_instanceConf.error"),
-            $t("TXT_CODE_instanceConf.autoRestartErr", { err: err })
-          );
-        });
+      const maxAutoRestartCount = this.config.eventTask.autoRestartMaxTimes;
+      if (maxAutoRestartCount == -1 || this.autoRestartCount < maxAutoRestartCount) {
+        this.execPreset("start")
+          .then(() => {
+            this.autoRestartCount++;
+            this.println($t("TXT_CODE_instanceConf.info"), $t("TXT_CODE_instanceConf.autoRestart"));
+          })
+          .catch((err) => {
+            this.println(
+              $t("TXT_CODE_instanceConf.error"),
+              $t("TXT_CODE_instanceConf.autoRestartErr", { err: err })
+            );
+          });
+      } else {
+        this.println($t("TXT_CODE_instanceConf.error"), $t("TXT_CODE_894b8e52"));
+      }
     }
 
     this.config.eventTask.ignore = false;
@@ -335,6 +427,21 @@ export default class Instance extends EventEmitter {
     } finally {
       this.process = undefined;
     }
+    this.resetInstanceRuntimeInfo();
+  }
+
+  resetInstanceRuntimeInfo() {
+    this.info = {
+      mcPingOnline: false,
+      currentPlayers: 0,
+      maxPlayers: 0,
+      version: "",
+      fileLock: 0,
+      playersChart: [],
+      openFrpStatus: false,
+      latency: 0,
+      allocatedPorts: this.info.allocatedPorts ?? []
+    };
   }
 
   // destroy this instance
@@ -401,13 +508,37 @@ export default class Instance extends EventEmitter {
     this.info.currentPlayers = 0;
     this.info.maxPlayers = 0;
     this.info.version = "";
+
     this.info.latency = 0;
   }
 
-  public parseTextParams(text: string) {
+  public async parseTextParams(text: string) {
+    if (typeof text !== "string") return "";
     text = text.replace(/\{mcsm_workspace\}/gim, this.absoluteCwdPath());
-    text = text.replace(/\{mcsm_instance_id\}/gim, this.instanceUuid);
     text = text.replace(/\{mcsm_cwd\}/gim, this.absoluteCwdPath());
+    text = text.replace(/\{mcsm_uuid\}/gim, this.instanceUuid);
+    text = text.replace(/\{mcsm_random\}/gim, randomUUID());
+    text = text.replace(/\{mcsm_run_as\}/gim, this.config.runAs);
+    text = text.replace(/\{mcsm_steamcmd\}/gim, STEAM_CMD_PATH);
+    text = text.replace(/\{mcsm_instance_id\}/gim, this.instanceUuid);
+    text = text.replace(/\{mcsm_instance_name\}/gim, this.config.nickname);
+    text = text.replace(/\{mcsm_instance_base_port\}/gim, String(this.config.basePort));
+
+    const javaId = this.config.java.id;
+    if (javaId) {
+      text = text.replace(/\{mcsm_java\}/gim, await javaManager.getJavaRuntimeCommand(javaId));
+    }
+
+    const ports = Array.from(
+      { length: globalConfiguration.config.portAssignInterval || 1 },
+      (_, index) => index + 1
+    );
+    const basePort = Number(this.config.basePort);
+    ports.forEach((portOffset) => {
+      const placeholder = `\\{mcsm_port${portOffset}\\}`;
+      const replacement = String(basePort + portOffset);
+      text = text.replace(new RegExp(placeholder, "gim"), replacement);
+    });
     return text;
   }
 
@@ -415,35 +546,40 @@ export default class Instance extends EventEmitter {
     return this.config.crlf === 2 ? "\r\n" : "\n";
   }
 
+  public generateEnv() {
+    let env = process.env;
+    if (this.config.runAs) {
+      env = {
+        ...env,
+        USER: this.config.runAs ?? "",
+        HOME: this.config.runAs ? `/home/${this.config.runAs}` : "",
+        LOGNAME: this.config.runAs ?? ""
+      };
+    }
+    return env;
+  }
+
   private pushOutput(data: string) {
-    if (data.length > LINE_MAX_SIZE * 100) {
-      this.outputStack.push(IGNORE_TEXT);
-    } else if (data.length > LINE_MAX_SIZE) {
-      for (let index = 0; index < Math.ceil(data.length / LINE_MAX_SIZE); index++) {
-        const tmp = data.slice(index * LINE_MAX_SIZE, (index + 1) * LINE_MAX_SIZE);
-        if (tmp) this.outputStack.push(tmp);
-      }
-    } else {
-      this.outputStack.push(data);
-    }
-    if (this.outputStack.length >= 100) {
-      this.outputStack.splice(0, 50);
-      this.outputStack.splice(0, 0, IGNORE_TEXT);
-    }
+    this.outputBuffer.pushLog(data);
+  }
+
+  private flushOutputBuffer(shouldClear = false) {
+    const { items, wasDeleted } = this.outputBuffer.getCache();
+    if (!items.length) return;
+    if (wasDeleted) items.unshift(IGNORE_TEXT);
+    if (shouldClear) this.outputBuffer.clear();
+    this.emit("data", items.join(""));
   }
 
   private startOutputLoop() {
-    this.stopOutputLoop();
     this.outputLoopTask = setInterval(() => {
-      if (this.outputStack.length > 0) {
-        const buf = this.outputStack.splice(0, 10);
-        this.emit("data", buf.join(""));
-      }
+      this.flushOutputBuffer();
     }, 50);
   }
 
   private stopOutputLoop() {
     if (this.outputLoopTask) clearInterval(this.outputLoopTask);
     this.outputLoopTask = undefined;
+    this.flushOutputBuffer(true);
   }
 }

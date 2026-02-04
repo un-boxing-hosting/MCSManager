@@ -1,39 +1,40 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { t } from "@/lang/i18n";
 import CardPanel from "@/components/CardPanel.vue";
+import { openInstanceTagsEditor, useDeleteInstanceDialog } from "@/components/fc/index";
+import TextContainer from "@/components/TextContainer.vue";
+import { useAppRouters } from "@/hooks/useAppRouters";
+import { useLayoutCardTools } from "@/hooks/useCardTools";
+import { useInstanceInfo, verifyEULA } from "@/hooks/useInstance";
+import { t } from "@/lang/i18n";
+import {
+  killInstance,
+  openInstance,
+  restartInstance,
+  stopInstance,
+  updateInstance
+} from "@/services/apis/instance";
+import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
+import { arrayFilter } from "@/tools/array";
+import { formatMemoryUsage } from "@/tools/memory";
+import { parseTimestamp } from "@/tools/time";
+import { reportErrorMsg } from "@/tools/validator";
 import type { InstanceDetail, LayoutCard } from "@/types/index";
-import { message } from "ant-design-vue";
 import {
   CheckCircleOutlined,
-  ExclamationCircleOutlined,
-  PlayCircleOutlined,
-  PauseCircleOutlined,
-  RedoOutlined,
   CloseOutlined,
   CloudDownloadOutlined,
   CodeOutlined,
-  UserOutlined,
+  DeleteOutlined,
+  ExclamationCircleOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+  RedoOutlined,
   TagsOutlined,
-  DeleteOutlined
+  UserOutlined
 } from "@ant-design/icons-vue";
-import {
-  openInstance,
-  stopInstance,
-  restartInstance,
-  killInstance,
-  updateInstance
-} from "@/services/apis/instance";
-import { Modal } from "ant-design-vue";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
-import { useInstanceInfo } from "@/hooks/useInstance";
-import { useAppRouters } from "@/hooks/useAppRouters";
-import { parseTimestamp } from "@/tools/time";
-import { arrayFilter } from "@/tools/array";
-import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
-import { reportErrorMsg } from "@/tools/validator";
-import { openInstanceTagsEditor, useDeleteInstanceDialog } from "@/components/fc/index";
+import { message, Modal } from "ant-design-vue";
 import _ from "lodash";
+import { computed, ref } from "vue";
 
 const props = defineProps<{
   card: LayoutCard;
@@ -77,6 +78,8 @@ const refreshList = () => {
 
 const actions = {
   start: async () => {
+    const flag = await verifyEULA(instanceId ?? "", daemonId ?? "");
+    if (!flag) return;
     await executeOpen(operationConfig);
     message.success(t("TXT_CODE_e13abbb1"));
   },
@@ -257,73 +260,85 @@ const instanceOperations = computed(() =>
     </template>
     <template #operator> </template>
     <template #body>
-      <a-typography-paragraph>
-        <div class="mb-6">
-          <a-tag :color="isRunning ? 'green' : ''">
-            <span v-if="isRunning">
-              <CheckCircleOutlined />
-              {{ statusText }}
-            </span>
-            <span v-else-if="isStopped" class="color-info">
-              <ExclamationCircleOutlined />
-              {{ statusText }}
-            </span>
-            <span v-else>
-              <ExclamationCircleOutlined />
-              {{ statusText }}
-            </span>
-          </a-tag>
-          <a-tag>
-            {{ instanceTypeText }}
-          </a-tag>
-        </div>
+      <div class="instance-card-body">
+        <a-typography-paragraph>
+          <div class="mb-8 flex" style="flex-wrap: wrap; gap: 8px">
+            <a-tag class="m-0" :color="isRunning ? 'green' : 'blue'">
+              <span v-if="isRunning">
+                <CheckCircleOutlined />
+                {{ statusText }}
+              </span>
+              <span v-else-if="isStopped">
+                <ExclamationCircleOutlined />
+                {{ statusText }}
+              </span>
+              <span v-else>
+                <ExclamationCircleOutlined />
+                {{ statusText }}
+              </span>
+            </a-tag>
+            <a-tag class="m-0" color="blue">
+              {{ instanceTypeText }}
+            </a-tag>
+            <div v-if="instanceInfo?.config.tag && instanceInfo?.config.tag.length > 0">|</div>
+            <a-tag v-for="item in instanceInfo?.config.tag" :key="item" class="m-0">
+              {{ item }}
+            </a-tag>
+          </div>
 
-        <div
-          v-if="instanceInfo?.config.tag && instanceInfo?.config.tag.length > 0"
-          class="instance-tag-container mb-6"
-        >
-          <a-tag
-            v-for="item in instanceInfo?.config.tag"
-            :key="item"
-            class="group-name-tag"
-            color="blue"
+          <div class="instance-info-line">
+            <span class="title">{{ t("TXT_CODE_34611898") }}:</span>
+            <span class="value"> {{ parseTimestamp(instanceInfo?.config.lastDatetime) }}</span>
+          </div>
+          <div v-if="instanceInfo?.config.endTime" class="instance-info-line">
+            <span class="title">{{ t("TXT_CODE_fa920c0") }}:</span>
+            <span> {{ parseTimestamp(instanceInfo?.config.endTime) }}</span>
+          </div>
+          <div
+            v-if="
+              instanceInfo?.config?.docker?.image && instanceInfo?.config?.processType === 'docker'
+            "
+            class="instance-info-line"
           >
-            {{ item }}
-          </a-tag>
-        </div>
+            <span class="title">{{ t("TXT_CODE_77000411") }}:</span>
+            <span class="value">
+              <TextContainer :text="instanceInfo?.config?.docker?.image" :max-length="26" />
+            </span>
+          </div>
+          <div v-if="instanceInfo?.info.memoryUsage" class="instance-info-line">
+            <span class="title">{{ t("TXT_CODE_593ee330") }}:</span>
+            <span class="value">
+              {{
+                formatMemoryUsage(instanceInfo?.info.memoryUsage, instanceInfo?.info.memoryLimit)
+              }}
+            </span>
+          </div>
+          <div v-if="instanceInfo?.info.mcPingOnline" class="instance-info-line">
+            <span class="title">{{ t("TXT_CODE_e4dce83f") }}:</span>
+            <span class="value" style="vertical-align: middle">
+              <UserOutlined />
+              {{ instanceInfo?.info.currentPlayers }} / {{ instanceInfo?.info.maxPlayers }}
+            </span>
+          </div>
+        </a-typography-paragraph>
 
-        <div>
-          {{ t("TXT_CODE_d31a684c") }}
-          {{ parseTimestamp(instanceInfo?.config.lastDatetime) }}
-        </div>
-        <div>
-          {{ t("TXT_CODE_ae747cc0") }}
-          {{ parseTimestamp(instanceInfo?.config.endTime) }}
-        </div>
-        <div v-if="instanceInfo?.info.mcPingOnline">
-          <span class="mr-2">{{ t("TXT_CODE_33a09033") }}</span>
-          <span style="vertical-align: middle">
-            <UserOutlined />
-            {{ instanceInfo?.info.currentPlayers }} / {{ instanceInfo?.info.maxPlayers }}
-          </span>
-        </div>
-      </a-typography-paragraph>
-      <a-space warp :size="6" class="mb-4">
-        <div v-for="item in instanceOperations" :key="item.title">
-          <a-divider v-if="item.area" type="vertical" />
-          <a-tooltip v-else :title="item.title">
-            <a-button
-              size="small"
-              :loading="item.loading"
-              :disabled="item.disabled"
-              :danger="item.danger"
-              @click="item.click"
-            >
-              <component :is="item.icon" style="font-size: 13px"></component>
-            </a-button>
-          </a-tooltip>
-        </div>
-      </a-space>
+        <a-space warp :size="6" class="mb-4">
+          <div v-for="item in instanceOperations" :key="item.title">
+            <a-divider v-if="item.area" type="vertical" />
+            <a-tooltip v-else :title="item.title">
+              <a-button
+                size="small"
+                :loading="item.loading"
+                :disabled="item.disabled"
+                :danger="item.danger"
+                @click="item.click"
+              >
+                <component :is="item.icon" style="font-size: 13px"></component>
+              </a-button>
+            </a-tooltip>
+          </div>
+        </a-space>
+      </div>
     </template>
   </CardPanel>
 </template>
@@ -332,6 +347,7 @@ const instanceOperations = computed(() =>
 .instance-card {
   cursor: pointer;
   min-height: 170px;
+  transition: border 0.3s ease;
 }
 .instance-card:hover {
   border: 1px solid var(--color-gray-8);
@@ -340,8 +356,30 @@ const instanceOperations = computed(() =>
 .instance-tag-container {
   margin-left: -4px;
   margin-right: -4px;
-  .group-name-tag {
-    margin: 4px;
+}
+.group-name-tag {
+  margin: 4px;
+}
+
+.instance-card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.instance-info-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+
+  .title {
+    margin-right: 10px;
+  }
+
+  .value {
+    opacity: 0.8;
   }
 }
 </style>

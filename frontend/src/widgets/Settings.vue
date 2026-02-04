@@ -1,31 +1,34 @@
 <script setup lang="ts">
+import { getProPanelUrl } from "@/components/IframeBox/config";
+import IframeBox from "@/components/IframeBox/index.vue";
 import LeftMenusPanel from "@/components/LeftMenusPanel.vue";
+import Loading from "@/components/Loading.vue";
+import { useUploadFileDialog } from "@/components/fc";
+import { router } from "@/config/router";
 import { SUPPORTED_LANGS, isCN, t } from "@/lang/i18n";
-import type { LayoutCard, Settings } from "@/types";
-import { onMounted, ref } from "vue";
-import { Modal, message, notification } from "ant-design-vue";
+import { setSettingInfo, settingInfo } from "@/services/apis";
+import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { reportErrorMsg } from "@/tools/validator";
+import type { LayoutCard, Settings } from "@/types";
 import {
   BankOutlined,
   BookOutlined,
   BugOutlined,
+  EditOutlined,
   GithubOutlined,
-  KeyOutlined,
   LockOutlined,
   MessageOutlined,
   MoneyCollectOutlined,
   PicLeftOutlined,
+  PlusOutlined,
   ProjectOutlined,
   QuestionCircleOutlined
 } from "@ant-design/icons-vue";
-
-import { settingInfo, setSettingInfo } from "@/services/apis";
-import Loading from "@/components/Loading.vue";
-import { useUploadFileDialog } from "@/components/fc";
-import { useLayoutConfigStore } from "../stores/useLayoutConfig";
-import { useAppConfigStore } from "@/stores/useAppConfigStore";
-import { arrayFilter } from "../tools/array";
-import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
+import { Modal, message, notification } from "ant-design-vue";
+import { onMounted, onUnmounted, ref } from "vue";
+import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
+import { arrayFilter } from "@/tools/array";
 
 defineProps<{
   card: LayoutCard;
@@ -34,14 +37,17 @@ defineProps<{
 const { execute, isReady } = settingInfo();
 const { execute: submitExecute, isLoading: submitIsLoading } = setSettingInfo();
 const { getSettingsConfig, setSettingsConfig } = useLayoutConfigStore();
-const { setBackgroundImage } = useAppConfigStore();
+const { setLogoImage, setBackgroundImage } = useAppConfigStore();
 const { changeDesignMode, containerState } = useLayoutContainerStore();
 
 interface MySettings extends Settings {
+  pageTitle?: string;
+  logoUrl?: string;
   bgUrl?: string;
+  proLicenseKey?: string;
 }
 
-const ApacheLicense = `Copyright ${new Date().getFullYear()} MCSManager Dev
+const ApacheLicense = `Copyright ${new Date().getFullYear()} MCSManager
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -79,6 +85,18 @@ const menus = arrayFilter([
     key: "baseInfo",
     icon: ProjectOutlined
   },
+  // {
+  //   title: t("TXT_CODE_574ed474"),
+  //   key: "pro",
+  //   icon: SketchOutlined,
+  //   condition: () => isCN()
+  // },
+  // {
+  //   title: t("TXT_CODE_caf8ebb7"),
+  //   key: "redeem",
+  //   icon: KeyOutlined,
+  //   condition: () => isCN()
+  // },
   {
     title: t("TXT_CODE_1c18acc0"),
     key: "ui",
@@ -90,29 +108,23 @@ const menus = arrayFilter([
     icon: LockOutlined
   },
   {
-    title: t("TXT_CODE_8bb8e2a1"),
-    key: "business",
-    icon: KeyOutlined,
-    condition: () => isCN()
-  },
-  {
-    title: t("TXT_CODE_3b4b656d"),
-    key: "about",
-    icon: QuestionCircleOutlined
-  },
-  {
     title: t("TXT_CODE_46cb40d5"),
     key: "sponsor",
     icon: MoneyCollectOutlined,
+    condition: () => !isCN(),
     click: () => {
       let url = "https://www.patreon.com/mcsmanager";
       if (isCN()) url = "https://afdian.com/a/mcsmanager";
       window.open(url, "_blank");
     }
+  },
+  {
+    title: t("TXT_CODE_3b4b656d"),
+    key: "about",
+    icon: QuestionCircleOutlined
   }
 ]);
 
-// DO NOT I18N
 const allLanguages = SUPPORTED_LANGS;
 
 const allYesNo = [
@@ -125,6 +137,21 @@ const allYesNo = [
     value: false
   }
 ];
+
+const totpDriftOptions = ref([
+  {
+    label: t("TXT_CODE_718c9310"),
+    value: 0
+  },
+  {
+    label: "30 s",
+    value: 1
+  },
+  {
+    label: "60 s",
+    value: 2
+  }
+]);
 
 const aboutLinks = arrayFilter([
   {
@@ -156,6 +183,50 @@ const contacts = arrayFilter([
     url: "https://github.com/MCSManager/MCSManager/issues"
   }
 ]);
+
+const handleSavePageTitle = async () => {
+  Modal.confirm({
+    title: t("TXT_CODE_3d811e3e"),
+    content: t("TXT_CODE_cf95364f"),
+    async onOk() {
+      const cfg = await getSettingsConfig();
+      if (!cfg?.theme) {
+        return reportErrorMsg(t("TXT_CODE_c7cb38fd"));
+      }
+      const newTitle = formData.value?.pageTitle?.trim() || t("TXT_CODE_47ae8ee6");
+      cfg.theme.pageTitle = newTitle;
+      await setSettingsConfig(cfg);
+
+      message.success(t("TXT_CODE_a7907771"));
+    }
+  });
+};
+
+const uploadLogo = async () => {
+  const body = document.querySelector("body");
+  if (formData.value && body) {
+    const url = await useUploadFileDialog();
+    if (url) {
+      formData.value.logoUrl = url;
+      setLogoImage(url);
+    }
+  }
+};
+
+const handleSaveLogoUrl = async (url?: string) => {
+  Modal.confirm({
+    title: t("TXT_CODE_dc053043"),
+    content: t("TXT_CODE_cf95364f"),
+    async onOk() {
+      const cfg = await getSettingsConfig();
+      if (!cfg?.theme) {
+        return reportErrorMsg(t("TXT_CODE_b89780e2"));
+      }
+      cfg.theme.logoImage = url ?? formData.value?.logoUrl ?? "";
+      await setSettingsConfig(cfg);
+    }
+  });
+};
 
 const uploadBackground = async () => {
   const body = document.querySelector("body");
@@ -193,17 +264,54 @@ const startDesignUI = async () => {
   });
 };
 
-const gotoBusinessCenter = () => {
-  window.open("https://redeem.mcsmanager.com/", "_blank");
+const leftMenusPanelRef = ref<InstanceType<typeof LeftMenusPanel>>();
+
+const toTemplate = {
+  path: "/market/editor",
+  new: () =>
+    router.push({
+      path: toTemplate.path,
+      query: {
+        newTemplate: "true"
+      }
+    }),
+  edit: () =>
+    router.push({
+      path: toTemplate.path,
+      query: {}
+    })
 };
 
 onMounted(async () => {
   const res = await execute();
   const cfg = await getSettingsConfig();
   formData.value = res.value!;
+  if (cfg?.theme?.logoImage) {
+    formData.value.logoUrl = cfg.theme.logoImage;
+  }
   if (cfg?.theme?.backgroundImage) {
     formData.value.bgUrl = cfg.theme.backgroundImage;
   }
+  if (cfg?.theme?.pageTitle) {
+    formData.value.pageTitle = cfg.theme.pageTitle;
+  } else {
+    formData.value.pageTitle = t("TXT_CODE_47ae8ee6");
+  }
+  setTimeout(() => {
+    if (router.currentRoute.value.query.tab === "pro") {
+      leftMenusPanelRef.value?.setActiveKey("pro");
+    }
+  }, 100);
+});
+
+onUnmounted(() => {
+  const route = router.currentRoute.value;
+  router.replace({
+    query: {
+      ...route.query,
+      tab: undefined
+    }
+  });
 });
 </script>
 
@@ -211,9 +319,9 @@ onMounted(async () => {
   <div>
     <CardPanel v-if="isReady && formData" class="CardWrapper" style="height: 100%" :padding="false">
       <template #body>
-        <LeftMenusPanel :menus="menus">
+        <LeftMenusPanel ref="leftMenusPanelRef" :menus="menus">
           <template #baseInfo>
-            <div :style="{ maxHeight: card.height, overflowY: 'auto' }">
+            <div class="content-box" :style="{ maxHeight: card.height }">
               <a-typography-title :level="4" class="mb-24">
                 {{ t("TXT_CODE_5206cf41") }}
               </a-typography-title>
@@ -252,14 +360,24 @@ onMounted(async () => {
                   </a-form-item>
 
                   <a-form-item>
-                    <a-typography-title :level="5">{{ t("TXT_CODE_b2767aa2") }}</a-typography-title>
+                    <a-typography-title :level="5">{{ t("TXT_CODE_6265ae47") }}</a-typography-title>
                     <a-typography-paragraph type="secondary">
-                      {{ t("TXT_CODE_b1f833f3") }}
+                      {{ t("TXT_CODE_24c4768a") }}
                     </a-typography-paragraph>
                     <a-input
                       v-model:value="formData.presetPackAddr"
                       :placeholder="t('TXT_CODE_4ea93630')"
+                      style="max-width: 320px"
                     />
+
+                    <a-button class="mx-8" type="primary" @click="toTemplate.edit">
+                      {{ t("TXT_CODE_ad207008") }}
+                      <EditOutlined />
+                    </a-button>
+                    <a-button @click="toTemplate.new">
+                      {{ t("TXT_CODE_53499d7") }}
+                      <PlusOutlined />
+                    </a-button>
                   </a-form-item>
 
                   <a-form-item>
@@ -270,6 +388,24 @@ onMounted(async () => {
                     <a-input
                       v-model:value="formData.httpIp"
                       style="max-width: 320px"
+                      :placeholder="t('TXT_CODE_4ea93630')"
+                    />
+                  </a-form-item>
+
+                  <a-form-item>
+                    <a-typography-title :level="5">Panel ID</a-typography-title>
+                    <a-typography-paragraph type="secondary">
+                      {{ t("TXT_CODE_e2976753") }}
+                      <br />
+                      <span v-if="formData.panelId">
+                        {{ t("TXT_CODE_e56cced3") }}
+                      </span>
+                      <span v-else>
+                        {{ t("TXT_CODE_699b4b66") }}
+                      </span>
+                    </a-typography-paragraph>
+                    <a-input
+                      v-model:value="formData.panelId"
                       :placeholder="t('TXT_CODE_4ea93630')"
                     />
                   </a-form-item>
@@ -285,12 +421,33 @@ onMounted(async () => {
           </template>
 
           <template #ui>
-            <div :style="{ maxHeight: card.height, overflowY: 'auto' }">
+            <div class="content-box" :style="{ maxHeight: card.height }">
               <a-typography-title :level="4" class="mb-24">
                 {{ t("TXT_CODE_1c18acc0") }}
               </a-typography-title>
               <div style="text-align: left">
                 <a-form :model="formData" layout="vertical">
+                  <a-form-item>
+                    <a-typography-title :level="5">{{ t("TXT_CODE_395f147d") }}</a-typography-title>
+                    <a-typography-paragraph type="secondary">
+                      {{ t("TXT_CODE_b305236a") }}
+                    </a-typography-paragraph>
+                    <a-input
+                      v-model:value="formData.pageTitle"
+                      :placeholder="t('TXT_CODE_4ea93630')"
+                    />
+                  </a-form-item>
+
+                  <div class="button mb-24">
+                    <a-button
+                      type="primary"
+                      :loading="submitIsLoading"
+                      @click="handleSavePageTitle()"
+                    >
+                      {{ t("TXT_CODE_abfe9512") }}
+                    </a-button>
+                  </div>
+
                   <a-form-item>
                     <a-typography-title :level="5">{{ t("TXT_CODE_ebd2a6a1") }}</a-typography-title>
                     <a-typography-paragraph>
@@ -334,6 +491,35 @@ onMounted(async () => {
                   </div>
 
                   <a-form-item>
+                    <a-typography-title :level="5">{{ t("TXT_CODE_47b5a2f7") }}</a-typography-title>
+                    <a-typography-paragraph>
+                      <a-typography-text type="secondary">
+                        <div>
+                          {{ t("TXT_CODE_cf95364f") }}
+                        </div>
+                      </a-typography-text>
+                    </a-typography-paragraph>
+                    <a-typography-paragraph>
+                      <div class="flex">
+                        <a-input
+                          v-model:value="formData.logoUrl"
+                          style="max-width: 320px"
+                          :placeholder="t('TXT_CODE_4ea93630')"
+                        />
+                        <a-button class="ml-6" @click="() => uploadLogo()">
+                          {{ t("TXT_CODE_ae09d79d") }}
+                        </a-button>
+                      </div>
+                    </a-typography-paragraph>
+                    <a-button type="primary" class="mr-6" @click="handleSaveLogoUrl()">
+                      {{ t("TXT_CODE_abfe9512") }}
+                    </a-button>
+                    <a-button danger @click="handleSaveLogoUrl('')">
+                      {{ t("TXT_CODE_50d471b2") }}
+                    </a-button>
+                  </a-form-item>
+
+                  <a-form-item>
                     <a-typography-title :level="5">{{ t("TXT_CODE_8ae0dc90") }}</a-typography-title>
                     <a-typography-paragraph>
                       <a-typography-text type="secondary">
@@ -370,7 +556,7 @@ onMounted(async () => {
           </template>
 
           <template #security>
-            <div :style="{ maxHeight: card.height, overflowY: 'auto' }">
+            <div class="content-box" :style="{ maxHeight: card.height }">
               <a-typography-title :level="4" class="mb-24">
                 {{ t("TXT_CODE_9c3ca8f") }}
               </a-typography-title>
@@ -437,11 +623,11 @@ onMounted(async () => {
 
                   <a-form-item>
                     <a-typography-title :level="5">
-                      {{ t("TXT_CODE_a5f01916") }}
+                      {{ t("TXT_CODE_3c93920b") }}
                     </a-typography-title>
                     <a-typography-paragraph>
                       <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_f5f9664") }}
+                        {{ t("TXT_CODE_bc2e52a0") }}
                       </a-typography-text>
                     </a-typography-paragraph>
                     <a-select
@@ -529,6 +715,31 @@ onMounted(async () => {
                       </a-select-option>
                     </a-select>
                   </a-form-item>
+
+                  <a-form-item>
+                    <a-typography-title :level="5">
+                      {{ t("TXT_CODE_b026be33") }}
+                    </a-typography-title>
+                    <a-typography-paragraph>
+                      <a-typography-text type="secondary">
+                        {{ t("TXT_CODE_a77b1a21") }}
+                      </a-typography-text>
+                    </a-typography-paragraph>
+
+                    <a-select
+                      v-model:value="formData.totpDriftToleranceSteps"
+                      style="max-width: 320px"
+                    >
+                      <a-select-option
+                        v-for="item in totpDriftOptions"
+                        :key="item.value"
+                        :value="item.value"
+                      >
+                        {{ item.label }}
+                      </a-select-option>
+                    </a-select>
+                  </a-form-item>
+
                   <div class="button">
                     <a-button type="primary" :loading="submitIsLoading" @click="submit(false)">
                       {{ t("TXT_CODE_abfe9512") }}
@@ -539,69 +750,16 @@ onMounted(async () => {
             </div>
           </template>
 
-          <template #business>
-            <div
-              :style="{
-                maxHeight: card.height,
-                overflowY: 'auto'
-              }"
-            >
-              <a-typography-title :level="4" class="mb-24">
-                {{ t("TXT_CODE_8bb8e2a1") }}
-              </a-typography-title>
-              <div class="mb-24">
-                <a-typography-paragraph>
-                  <a-typography-title :level="5">
-                    {{ t("TXT_CODE_180884da") }}
-                  </a-typography-title>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_3f227bcf") }}
-                  </a-typography-text>
-                </a-typography-paragraph>
-                <div>
-                  <a-switch v-model:checked="formData.businessMode" @change="submit(false)" />
-                </div>
-              </div>
-              <div class="mb-24">
-                <a-typography-paragraph>
-                  <a-typography-title :level="5">
-                    {{ t("TXT_CODE_d31196db") }}
-                  </a-typography-title>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_59c39e03") }}
-                  </a-typography-text>
-                </a-typography-paragraph>
-                <div>
-                  <a-button :disabled="!formData.businessMode" @click="gotoBusinessCenter()">
-                    {{ t("TXT_CODE_2dbd3cd3") }}
-                  </a-button>
-                </div>
-              </div>
-              <div v-if="formData.businessMode" class="mb-24">
-                <a-typography-paragraph>
-                  <a-typography-title :level="5">{{ t("TXT_CODE_72cfab69") }}</a-typography-title>
-                  <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_678164d7") }}
-                  </a-typography-text>
-                </a-typography-paragraph>
-                <div>
-                  <a-input
-                    v-model:value="formData.businessId"
-                    style="max-width: 200px"
-                    placeholder="eg: 123"
-                  />
-                </div>
-              </div>
-              <div>
-                <a-button type="primary" :loading="submitIsLoading" @click="submit(false)">
-                  {{ t("TXT_CODE_abfe9512") }}
-                </a-button>
-              </div>
-            </div>
+          <template #pro>
+            <IframeBox :src="getProPanelUrl('/status')" :height="card.height" />
+          </template>
+
+          <template #redeem>
+            <IframeBox :src="getProPanelUrl('/')" :height="card.height" />
           </template>
 
           <template #about>
-            <div :style="{ maxHeight: card.height, overflowY: 'auto' }">
+            <div class="content-box" :style="{ maxHeight: card.height }">
               <a-typography-title :level="4" class="mb-24">
                 {{ t("TXT_CODE_3b4b656d") }}
               </a-typography-title>
@@ -645,7 +803,7 @@ onMounted(async () => {
           </template>
 
           <template #sponsor>
-            <div :style="{ maxHeight: card.height, overflowY: 'auto' }">
+            <div class="content-box" :style="{ maxHeight: card.height }">
               <a-typography-title :level="4" class="mb-24">
                 {{ t("TXT_CODE_46cb40d5") }}
               </a-typography-title>
@@ -673,5 +831,10 @@ div {
     top: 0;
     left: 0;
   }
+}
+
+.content-box {
+  padding: 16px;
+  overflow-y: auto;
 }
 </style>

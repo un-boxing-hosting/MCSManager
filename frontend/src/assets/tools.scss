@@ -1,5 +1,9 @@
 // Global tool style class
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .full-card-body-container {
   position: absolute;
   top: 0px;
@@ -19,6 +23,10 @@
   text-shadow:
     6px -4px 15px #e6dede,
     -7px 7px 15px #e2e2e2;
+}
+
+.text-center {
+  text-align: center;
 }
 
 .flex-between {
@@ -41,6 +49,11 @@
   flex-wrap: wrap;
 }
 
+.flex-nowrap {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
 .flex {
   display: flex;
 }
@@ -49,8 +62,8 @@
   flex-direction: column;
 }
 
-.justify-center {
-  justify-content: center;
+.flex-row {
+  flex-direction: row;
 }
 
 .justify-start {
@@ -119,12 +132,20 @@
   justify-content: flex-end;
 }
 
-.justify-space-between {
+.justify-space-between,
+.justify-between {
   display: flex;
   justify-content: space-between;
 }
 
-.h-100 {
+.justify-space-around,
+.justify-around {
+  display: flex;
+  justify-content: space-around;
+}
+
+.h-100,
+.h-full {
   height: 100% !important;
 }
 
@@ -132,7 +153,8 @@
   height: 50% !important;
 }
 
-.w-100 {
+.w-100,
+.w-full {
   width: 100% !important;
 }
 
@@ -160,6 +182,25 @@
   color: var(--color-info);
 }
 
+.button-color-success {
+  color: #ffffff !important;
+  background-color: var(--color-green-6) !important;
+}
+
+.button-color-warning {
+  color: #ffffff !important;
+  background-color: var(--color-warning) !important;
+}
+
+.button-color-danger {
+  color: #ffffff !important;
+  background-color: var(--color-danger) !important;
+}
+
+.button-color-info {
+  background-color: var(--color-info) !important;
+}
+
 .transition-all-6 {
   transition: all 0.6s;
 }
@@ -183,6 +224,10 @@
 
 .items-center {
   align-items: center;
+}
+
+.items-right {
+  text-align: right;
 }
 
 .items-flex-start {
@@ -240,6 +285,20 @@
   text-overflow: ellipsis;
 }
 
+.scrollbar-hidden {
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE 10+ */
+  -ms-overflow-style: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  /* Chrome, Safari, Opera */
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
 @mixin generate-styles($depth) {
   .m-#{$depth} {
     margin: #{$depth}px !important;
@@ -256,6 +315,14 @@
   .mt-#{$depth} {
     margin-top: #{$depth}px !important;
   }
+  .mx-#{$depth} {
+    margin-left: #{$depth}px !important;
+    margin-right: #{$depth}px !important;
+  }
+  .my-#{$depth} {
+    margin-top: #{$depth}px !important;
+    margin-bottom: #{$depth}px !important;
+  }
   .p-#{$depth} {
     padding: #{$depth}px !important;
   }
@@ -270,6 +337,14 @@
   }
   .pt-#{$depth} {
     padding-top: #{$depth}px !important;
+  }
+  .px-#{$depth} {
+    padding-left: #{$depth}px !important;
+    padding-right: #{$depth}px !important;
+  }
+
+  .gap-#{$depth} {
+    gap: #{$depth}px;
   }
 
   @if $depth >= 1 {

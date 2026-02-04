@@ -1,8 +1,8 @@
-import { reportErrorMsg } from "@/tools/validator";
 import { useAppStateStore } from "@/stores/useAppStateStore";
+import { reportErrorMsg } from "@/tools/validator";
 import type { AxiosError, AxiosRequestConfig } from "axios";
 import axios from "axios";
-import EventEmitter from "events";
+import EventEmitter from "eventemitter3";
 import _ from "lodash";
 
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
@@ -45,14 +45,14 @@ class ApiService {
       }
     });
 
+    if (config.url?.startsWith("/")) {
+      config.url = "." + config.url;
+    }
+
     if (config.forceRequest === true) {
       config.params = config?.params || {};
       config.params._force = Date.now();
       return await this.sendRequest<T>(config);
-    }
-
-    if (config.url?.startsWith("/")) {
-      config.url = "." + config.url;
     }
 
     const reqId = encodeURIComponent(
@@ -100,7 +100,7 @@ class ApiService {
 
       // Request cache
       const startTime = Date.now();
-      if (!config.timeout) config.timeout = 1000 * 10;
+      if (!config.timeout) config.timeout = 1000 * 30;
       const { data: result } = await axios<PacketProtocol<T>>(config);
       const endTime = Date.now();
       const reqSpeed = endTime - startTime;

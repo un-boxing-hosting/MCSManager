@@ -1,18 +1,22 @@
 import Router from "@koa/router";
+import axios from "axios";
+import fs from "fs-extra";
+import path from "path";
+import { MARKET_CACHE_FILE_PATH, SAVE_DIR_PATH } from "../const";
+import { ROLE } from "../entity/user";
+import { $t } from "../i18n";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
-import RemoteServiceSubsystem from "../service/remote_service";
-import RemoteRequest from "../service/remote_command";
 import { multiOperationForwarding } from "../service/instance_service";
-import { timeUuid } from "../service/password";
-import { $t } from "../i18n";
-import axios from "axios";
-import { systemConfig } from "../setting";
+import { logger } from "../service/log";
+import { operationLogger } from "../service/operation_logger";
 import { getUserUuid } from "../service/passport_service";
+import { timeUuid } from "../service/password";
 import { isHaveInstanceByUuid, isTopPermissionByUuid } from "../service/permission_service";
-import { ROLE } from "../entity/user";
-import { removeTrail } from "mcsmanager-common";
+import RemoteRequest from "../service/remote_command";
+import RemoteServiceSubsystem from "../service/remote_service";
 import userSystem from "../service/user_service";
+import { systemConfig } from "../setting";
 
 const router = new Router({ prefix: "/instance" });
 
@@ -45,6 +49,7 @@ router.post(
   "/",
   permission({ level: ROLE.ADMIN }),
   validator({ query: { daemonId: String } }),
+
   async (ctx) => {
     try {
       const daemonId = String(ctx.query.daemonId);
@@ -52,6 +57,13 @@ router.post(
       const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
       const result = await new RemoteRequest(remoteService).request("instance/new", config);
       ctx.body = result;
+      operationLogger.log("instance_create", {
+        daemon_id: daemonId,
+        instance_id: result.instanceUuid,
+        operator_ip: ctx.ip,
+        operator_name: ctx.session?.["userName"],
+        instance_name: result.nickname
+      });
     } catch (err) {
       ctx.body = err;
     }
@@ -70,13 +82,20 @@ router.post(
       // const uploadDir = String(ctx.query.upload_dir);
       const config = ctx.request.body;
       const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
       const result = await new RemoteRequest(remoteService).request("instance/new", config);
       const newInstanceUuid = result.instanceUuid;
       if (!newInstanceUuid) throw new Error($t("TXT_CODE_router.instance.createError"));
+      operationLogger.log("instance_create", {
+        daemon_id: daemonId,
+        instance_id: newInstanceUuid,
+        operator_ip: ctx.ip,
+        operator_name: ctx.session?.["userName"],
+        instance_name: result.nickname
+      });
       // Send a cross-end file upload task to the daemon
-      const addr = `${remoteService?.config.ip}:${remoteService?.config.port}${
-        remoteService?.config.prefix ? removeTrail(remoteService.config.prefix, "/") : ""
-      }`;
+      const addr = remoteService.config.fullAddr;
+      const remoteMappings = remoteService.config.getConvertedRemoteMappings();
       const password = timeUuid();
       await new RemoteRequest(remoteService).request("passport/register", {
         name: "upload",
@@ -89,7 +108,8 @@ router.post(
       ctx.body = {
         instanceUuid: newInstanceUuid,
         password,
-        addr
+        addr,
+        remoteMappings
       };
     } catch (err) {
       ctx.body = err;
@@ -112,6 +132,13 @@ router.put(
       const result = await new RemoteRequest(remoteService).request("instance/update", {
         instanceUuid,
         config
+      });
+      operationLogger.log("instance_config_change", {
+        daemon_id: daemonId,
+        instance_id: instanceUuid,
+        operator_ip: ctx.ip,
+        operator_name: ctx.session?.["userName"],
+        instance_name: config.nickname
       });
       ctx.body = result;
     } catch (err) {
@@ -142,6 +169,19 @@ router.delete(
         instanceUuids,
         deleteFile
       });
+      result.instances.forEach((e: { instanceUuid: string; nickname: string }) => {
+        operationLogger.log(
+          "instance_delete",
+          {
+            daemon_id: daemonId,
+            instance_id: e.instanceUuid,
+            operator_ip: ctx.ip,
+            operator_name: ctx.session?.["userName"],
+            instance_name: e.nickname
+          },
+          "error"
+        );
+      });
       ctx.body = result;
     } catch (err) {
       ctx.body = err;
@@ -159,6 +199,17 @@ router.post("/multi_open", permission({ level: ROLE.ADMIN }), async (ctx) => {
       new RemoteRequest(remoteService)
         .request("instance/open", {
           instanceUuids
+        })
+        .then((e) => {
+          e.instances.forEach((instance: { instanceUuid: string; nickname: string }) => {
+            operationLogger.log("instance_start", {
+              daemon_id: daemonId,
+              instance_id: instance.instanceUuid,
+              operator_ip: ctx.ip,
+              operator_name: ctx.session?.["userName"],
+              instance_name: instance.nickname
+            });
+          });
         })
         .catch(() => {});
     });
@@ -179,6 +230,17 @@ router.post("/multi_stop", permission({ level: ROLE.ADMIN }), async (ctx) => {
         .request("instance/stop", {
           instanceUuids
         })
+        .then((e) => {
+          e.instances.forEach((instance: { instanceUuid: string; nickname: string }) => {
+            operationLogger.log("instance_stop", {
+              daemon_id: daemonId,
+              instance_id: instance.instanceUuid,
+              operator_ip: ctx.ip,
+              operator_name: ctx.session?.["userName"],
+              instance_name: instance.nickname
+            });
+          });
+        })
         .catch(() => {});
     });
     ctx.body = true;
@@ -196,6 +258,17 @@ router.post("/multi_kill", permission({ level: ROLE.ADMIN }), async (ctx) => {
       const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
       new RemoteRequest(remoteService)
         .request("instance/kill", { instanceUuids })
+        .then((e) => {
+          e.instances.forEach((instance: { instanceUuid: string; nickname: string }) => {
+            operationLogger.warning("instance_kill", {
+              daemon_id: daemonId,
+              instance_id: instance.instanceUuid,
+              operator_ip: ctx.ip,
+              operator_name: ctx.session?.["userName"],
+              instance_name: instance.nickname
+            });
+          });
+        })
         .catch((err) => {});
     });
     ctx.body = true;
@@ -213,6 +286,17 @@ router.post("/multi_restart", permission({ level: ROLE.ADMIN }), async (ctx) => 
       const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
       new RemoteRequest(remoteService)
         .request("instance/restart", { instanceUuids })
+        .then((e) => {
+          e.instances.forEach((instance: { instanceUuid: string; nickname: string }) => {
+            operationLogger.log("instance_restart", {
+              daemon_id: daemonId,
+              instance_id: instance.instanceUuid,
+              operator_ip: ctx.ip,
+              operator_name: ctx.session?.["userName"],
+              instance_name: instance.nickname
+            });
+          });
+        })
         .catch((err) => {});
     });
     ctx.body = true;
@@ -231,13 +315,50 @@ router.get("/quick_install_list", permission({ level: ROLE.USER }), async (ctx) 
   }
 
   const ADDR = systemConfig?.presetPackAddr;
+
   try {
-    const response = await axios.request({
+    if (ADDR?.startsWith(SAVE_DIR_PATH)) {
+      const filesDir = path.join(process.cwd(), SAVE_DIR_PATH);
+      const fileName = ADDR?.split(SAVE_DIR_PATH)[1];
+      const filePath = path.join(filesDir, fileName ?? "");
+      if (fs.existsSync(filePath)) {
+        ctx.body = JSON.parse(await fs.readFile(filePath, "utf-8"));
+      } else {
+        throw new Error(`Request failed, status: 404`);
+      }
+      return;
+    }
+
+    // Cache logic implementation
+    const CACHE_DURATION = 12 * 60 * 60 * 1000; // 12 hours
+
+    // Check if cache file exists and is valid
+    try {
+      const stats = await fs.stat(MARKET_CACHE_FILE_PATH);
+      const now = Date.now();
+      const fileAge = now - stats.mtime.getTime();
+
+      // Use cache
+      if (fileAge < CACHE_DURATION) {
+        const cachedData = await fs.readFile(MARKET_CACHE_FILE_PATH, "utf-8");
+        ctx.body = JSON.parse(cachedData);
+        return;
+      }
+    } catch (error) {
+      // Cache file doesn't exist, continue to fetch new data
+    }
+
+    const res = await axios.request({
       method: "GET",
       url: ADDR
     });
-    if (response.status !== 200) throw new Error("Response code != 200");
-    ctx.body = response.data;
+    if (res.status !== 200) throw new Error(`Request failed, status: ${res.status}`);
+    ctx.body = res.data;
+
+    // Save to cache file
+    fs.writeFile(MARKET_CACHE_FILE_PATH, JSON.stringify(res.data), "utf-8").catch((err) => {
+      logger.warn(`Failed to write quick install cache file at ${MARKET_CACHE_FILE_PATH}: ${err}`);
+    });
   } catch (err) {
     ctx.body = [];
   }

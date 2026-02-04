@@ -1,13 +1,12 @@
-import { v4 } from "uuid";
-import { $t as t } from "../i18n";
-import storage from "../common/system_storage";
+import fs from "fs-extra";
 import { GlobalVariable } from "mcsmanager-common";
 import path from "path";
-import fs from "fs-extra";
+import { v4 } from "uuid";
+import storage from "../common/system_storage";
+import { SAVE_DIR_PATH } from "../const";
+import { $t as t } from "../i18n";
 
 const LAYOUT_CONFIG_NAME = "layout.json";
-
-export const SAVE_DIR_PATH = "public/upload_files/";
 
 function getRandomId() {
   return v4();
@@ -66,11 +65,13 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
       page: "__settings__",
       items: [],
       theme: {
+        pageTitle: "MCSManager Panel",
+        logoImage: "",
         backgroundImage: ""
       }
     },
     {
-      page: "/",
+      page: "/overview",
       items: [
         {
           id: getRandomId(),
@@ -121,16 +122,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           meta: {},
           type: "DataOverview",
           title: t("TXT_CODE_721157a3"),
-          width: 9,
-          description: t("TXT_CODE_55ade942"),
-          height: LayoutCardHeight.MEDIUM
-        },
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "QuickStart",
-          title: t("TXT_CODE_2799a1dd"),
-          width: 3,
+          width: 12,
           description: t("TXT_CODE_55ade942"),
           height: LayoutCardHeight.MEDIUM
         },
@@ -155,11 +147,64 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: getRandomId(),
           meta: {},
+          type: "OperationLogCard",
+          title: t("TXT_CODE_f6a33629"),
+          width: 4,
+          description: t("TXT_CODE_9e8c176e"),
+          height: LayoutCardHeight.MEDIUM
+        },
+        {
+          id: getRandomId(),
+          meta: {},
           type: "NodeOverview",
           title: t("TXT_CODE_bfb50126"),
-          width: 12,
+          width: 8,
           description: t("TXT_CODE_55ade942"),
           height: LayoutCardHeight.MEDIUM
+        }
+      ]
+    },
+    {
+      page: "/market",
+      items: [
+        {
+          id: getRandomId(),
+          meta: {},
+          type: "Market",
+          title: t("TXT_CODE_88249aee"),
+          width: 12,
+          height: LayoutCardHeight.AUTO,
+          disableDelete: true
+        },
+        {
+          id: getRandomId(),
+          meta: {},
+          type: "EmptyCard",
+          title: "",
+          width: 12,
+          height: LayoutCardHeight.MINI
+        }
+      ]
+    },
+    {
+      page: "/market/editor",
+      items: [
+        {
+          id: getRandomId(),
+          meta: {},
+          type: "MarketEditor",
+          title: t("TXT_CODE_54275b9c"),
+          width: 12,
+          height: LayoutCardHeight.AUTO,
+          disableDelete: true
+        },
+        {
+          id: getRandomId(),
+          meta: {},
+          type: "EmptyCard",
+          title: "",
+          width: 12,
+          height: LayoutCardHeight.MINI
         }
       ]
     },
@@ -227,6 +272,28 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           meta: {},
           type: "InstanceFileManager",
           title: t("TXT_CODE_ae533703"),
+          width: 12,
+          height: LayoutCardHeight.AUTO,
+          disableDelete: true
+        },
+        {
+          id: getRandomId(),
+          meta: {},
+          type: "EmptyCard",
+          title: "",
+          width: 12,
+          height: LayoutCardHeight.MINI
+        }
+      ]
+    },
+    {
+      page: "/instances/terminal/mods",
+      items: [
+        {
+          id: getRandomId(),
+          meta: {},
+          type: "InstanceModManager",
+          title: t("TXT_CODE_MOD_MANAGER"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -359,7 +426,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           meta: {},
           type: "Settings",
           title: t("TXT_CODE_3fe97dcc"),
-          width: 8,
+          width: 9,
           height: LayoutCardHeight.LARGE,
           disableDelete: true
         }
@@ -545,52 +612,11 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: getRandomId(),
           meta: {},
-          type: "EmptyCard",
-          title: "",
-          width: 2,
-          height: LayoutCardHeight.MINI
-        },
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "ShopInfoCard",
-          title: t("TXT_CODE_4770de17"),
-          width: 8,
-          height: LayoutCardHeight.SMALL,
-          disableDelete: true
-        },
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "EmptyCard",
-          title: "",
-          width: 2,
-          height: LayoutCardHeight.MINI
-        },
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "EmptyCard",
-          title: "",
-          width: 2,
-          height: LayoutCardHeight.MINI
-        },
-        {
-          id: getRandomId(),
-          meta: {},
           type: "ShelvesCard",
           title: t("TXT_CODE_381f8f22"),
-          width: 8,
+          width: 12,
           height: LayoutCardHeight.LARGE,
           disableDelete: true
-        },
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "EmptyCard",
-          title: "",
-          width: 2,
-          height: LayoutCardHeight.MINI
         }
       ]
     },

@@ -1,43 +1,52 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
 import CardPanel from "@/components/CardPanel.vue";
-import { t } from "@/lang/i18n";
-import type { LayoutCard } from "@/types";
-import {
-  CloudDownloadOutlined,
-  CloudServerOutlined,
-  DownOutlined,
-  PauseCircleOutlined,
-  PlayCircleOutlined,
-  RedoOutlined,
-  LaptopOutlined,
-  InteractionOutlined,
-  LoadingOutlined,
-  MoneyCollectOutlined
-} from "@ant-design/icons-vue";
-import { CheckCircleOutlined, InfoCircleOutlined } from "@ant-design/icons-vue";
-import { arrayFilter } from "../../tools/array";
-import { useTerminal } from "../../hooks/useTerminal";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
-import { useScreen } from "@/hooks/useScreen";
+import { openMarketDialog, openRenewalDialog } from "@/components/fc";
 import IconBtn from "@/components/IconBtn.vue";
+import TerminalCore from "@/components/TerminalCore.vue";
+import TerminalTags from "@/components/TerminalTags.vue";
+import { useLayoutCardTools } from "@/hooks/useCardTools";
+import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
+import { useScreen } from "@/hooks/useScreen";
+import { t } from "@/lang/i18n";
 import {
-  openInstance,
-  stopInstance,
-  restartInstance,
   killInstance,
+  openInstance,
+  restartInstance,
+  stopInstance,
   updateInstance
 } from "@/services/apis/instance";
-import { CloseOutlined } from "@ant-design/icons-vue";
-import { GLOBAL_INSTANCE_NAME } from "../../config/const";
-import { INSTANCE_STATUS } from "@/types/const";
-import { reportErrorMsg } from "@/tools/validator";
-import TerminalCore from "@/components/TerminalCore.vue";
-import Reinstall from "./dialogs/Reinstall.vue";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
-import { useMountComponent } from "@/hooks/useMountComponent";
-import UseRedeemDialog from "@/components/fc/UseRedeemDialog.vue";
+import { sleep } from "@/tools/common";
+import { reportErrorMsg } from "@/tools/validator";
+import type { LayoutCard } from "@/types";
+import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@/types/const";
+import {
+  ApartmentOutlined,
+  BlockOutlined,
+  CheckCircleOutlined,
+  CloseOutlined,
+  CloudDownloadOutlined,
+  CloudServerOutlined,
+  DashboardOutlined,
+  DownOutlined,
+  HddOutlined,
+  InfoCircleOutlined,
+  InteractionOutlined,
+  LaptopOutlined,
+  LoadingOutlined,
+  MoneyCollectOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+  RedoOutlined
+} from "@ant-design/icons-vue";
+import { useLocalStorage } from "@vueuse/core";
+import { Modal } from "ant-design-vue";
+import prettyBytes, { type Options as PrettyOptions } from "pretty-bytes";
+import { computed, h, onUnmounted } from "vue";
+import type { TagInfo } from "../../components/interface";
+import { GLOBAL_INSTANCE_NAME } from "../../config/const";
+import { useTerminal, type UseTerminalHook } from "../../hooks/useTerminal";
+import { arrayFilter } from "../../tools/array";
 
 const props = defineProps<{
   card: LayoutCard;
@@ -46,15 +55,20 @@ const props = defineProps<{
 const { isPhone } = useScreen();
 const { state, isAdmin } = useAppStateStore();
 const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
+
+// The `useTerminal` is shared by this component and `TerminalCore`.
+// Please do not initialize `useTerminal` in this component; all initialization logic should be placed in its child component `TerminalCore.vue`.
+// The state of the shared terminal is used here.
+const terminalHook: UseTerminalHook = useTerminal();
 const {
-  execute,
   state: instanceInfo,
   isStopped,
   isRunning,
   isBuys,
-  isGlobalTerminal
-} = useTerminal();
-const reinstallDialog = ref<InstanceType<typeof Reinstall>>();
+  isGlobalTerminal,
+  isDockerMode,
+  clearTerminal
+} = terminalHook;
 
 const instanceId = getMetaOrRouteValue("instanceId");
 const daemonId = getMetaOrRouteValue("daemonId");
@@ -63,6 +77,44 @@ const innerTerminalType = computed(() => props.card.width === 12 && viewType ===
 const instanceTypeText = computed(
   () => INSTANCE_TYPE_TRANSLATION[instanceInfo.value?.config.type ?? -1]
 );
+
+const { execute: requestOpenInstance, isLoading: isOpenInstanceLoading } = openInstance();
+
+let checkRunningTimer: NodeJS.Timeout;
+const toOpenInstance = async () => {
+  if (checkRunningTimer) clearTimeout(checkRunningTimer);
+  clearTerminal();
+  try {
+    if (instanceInfo.value?.config?.type?.startsWith("minecraft/java")) {
+      const flag = await verifyEULA(instanceId ?? "", daemonId ?? "");
+      if (!flag) return;
+      await sleep(1000);
+    }
+
+    await requestOpenInstance({
+      params: {
+        uuid: instanceId ?? "",
+        daemonId: daemonId ?? ""
+      }
+    });
+
+    checkRunningTimer = setTimeout(() => {
+      if (terminalHook.isStopped.value) {
+        Modal.error({
+          title: t("TXT_CODE_ac405b50"),
+          content: h("div", [
+            h("p", t("TXT_CODE_3409258a")),
+            h("p", `${t("TXT_CODE_973414e1")}：${instanceInfo.value?.config.startCommand || ""}`),
+            isDockerMode.value &&
+              h("p", `${t("TXT_CODE_44b585c7")}：${instanceInfo.value?.config.docker.image || ""}`)
+          ])
+        });
+      }
+    }, INSTANCE_CRASH_TIMEOUT);
+  } catch (error: any) {
+    reportErrorMsg(error);
+  }
+};
 
 const updateCmd = computed(() => (instanceInfo.value?.config.updateCommand ? true : false));
 const instanceStatusText = computed(() => INSTANCE_STATUS[instanceInfo.value?.status ?? -1]);
@@ -73,18 +125,8 @@ const quickOperations = computed(() =>
       icon: PlayCircleOutlined,
       noConfirm: false,
       type: "default",
-      click: async () => {
-        try {
-          await openInstance().execute({
-            params: {
-              uuid: instanceId || "",
-              daemonId: daemonId || ""
-            }
-          });
-        } catch (error: any) {
-          reportErrorMsg(error);
-        }
-      },
+      class: "button-color-success",
+      click: toOpenInstance,
       props: {},
       condition: () => isStopped.value
     },
@@ -136,6 +178,7 @@ const instanceOperations = computed(() =>
       title: t("TXT_CODE_7b67813a"),
       icon: CloseOutlined,
       type: "danger",
+      class: "color-warning",
       click: async () => {
         try {
           await killInstance().execute({
@@ -156,6 +199,7 @@ const instanceOperations = computed(() =>
       icon: CloudDownloadOutlined,
       click: async () => {
         try {
+          clearTerminal();
           await updateInstance().execute({
             params: {
               uuid: instanceId || "",
@@ -176,7 +220,17 @@ const instanceOperations = computed(() =>
       title: t("TXT_CODE_b19ed1dd"),
       icon: InteractionOutlined,
       noConfirm: true,
-      click: () => reinstallDialog.value?.openDialog(),
+      click: async () => {
+        try {
+          clearTerminal();
+          await openMarketDialog(daemonId ?? "", instanceId ?? "", {
+            autoInstall: true,
+            onlyDockerTemplate: isDockerMode.value
+          });
+        } catch (error: any) {
+          // ignore
+        }
+      },
       props: {},
       condition: () =>
         isStopped.value &&
@@ -187,13 +241,15 @@ const instanceOperations = computed(() =>
       title: t("TXT_CODE_f77093c8"),
       icon: MoneyCollectOutlined,
       noConfirm: true,
-      click: () => {
-        useMountComponent({
-          instanceId: instanceId
-        }).mount(UseRedeemDialog);
+      click: async () => {
+        await openRenewalDialog(
+          instanceInfo.value?.instanceUuid ?? "",
+          daemonId ?? "",
+          instanceInfo.value?.config.category ?? 0
+        );
       },
       props: {},
-      condition: () => state.settings.businessMode
+      condition: () => !!instanceInfo.value?.config?.category
     }
   ])
 );
@@ -206,18 +262,84 @@ const getInstanceName = computed(() => {
   }
 });
 
-onMounted(async () => {
-  try {
-    if (instanceId && daemonId) {
-      await execute({
-        instanceId,
-        daemonId
-      });
+const useByteUnit = useLocalStorage("useByteUnit", true); // true: bytes, false: bits
+const prettyBytesConfig: PrettyOptions = {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  binary: true
+};
+
+const getUsageColor = (percentage?: number) => {
+  percentage = Number(percentage);
+  if (percentage > 600) return "error";
+  if (percentage > 200) return "warning";
+  return "default";
+};
+
+const formatMemoryUsage = (usage?: number, limit?: number) => {
+  const fUsage = prettyBytes(usage ?? 0, prettyBytesConfig);
+  const fLimit = prettyBytes(limit ?? 0, prettyBytesConfig);
+
+  return limit ? `${fUsage} / ${fLimit}` : fUsage;
+};
+
+const formatNetworkSpeed = (bytes?: number) =>
+  useByteUnit.value
+    ? prettyBytes(bytes ?? 0, { ...prettyBytesConfig, binary: false }) + "/s"
+    : prettyBytes((bytes ?? 0) * 8, { ...prettyBytesConfig, bits: true, binary: false }).replace(
+        /bit$/,
+        "b"
+      ) + "ps";
+
+const terminalTopTags = computed<TagInfo[]>(() => {
+  const info = instanceInfo.value?.info;
+  if (!info || isStopped.value) return [];
+  const {
+    cpuUsage,
+    memoryUsage,
+    memoryLimit,
+    memoryUsagePercent,
+    rxBytes,
+    txBytes,
+    storageUsage,
+    storageLimit
+  } = info;
+
+  return arrayFilter<TagInfo>([
+    {
+      label: t("TXT_CODE_b862a158"),
+      value: `${parseInt(String(cpuUsage))}%`,
+      color: getUsageColor(cpuUsage),
+      icon: BlockOutlined,
+      condition: () => cpuUsage != null
+    },
+    {
+      label: t("TXT_CODE_593ee330"),
+      value: formatMemoryUsage(memoryUsage, memoryLimit),
+      color: getUsageColor(memoryUsagePercent),
+      icon: DashboardOutlined,
+      condition: () => memoryUsage != null
+    },
+    {
+      label: t("TXT_CODE_DISK_USAGE"),
+      value: formatMemoryUsage(storageUsage, storageLimit),
+      icon: HddOutlined,
+      condition: () => storageUsage != null
+    },
+    {
+      label: t("TXT_CODE_50daec4"),
+      value: `↓${formatNetworkSpeed(rxBytes)} · ↑${formatNetworkSpeed(txBytes)}`,
+      icon: ApartmentOutlined,
+      condition: () => rxBytes != null || txBytes != null,
+      onClick: () => {
+        useByteUnit.value = !useByteUnit.value;
+      }
     }
-  } catch (error: any) {
-    console.error(error);
-    throw error;
-  }
+  ]);
+});
+
+onUnmounted(() => {
+  if (checkRunningTimer) clearTimeout(checkRunningTimer);
 });
 </script>
 
@@ -242,13 +364,13 @@ onMounted(async () => {
                   <LoadingOutlined />
                   {{ instanceStatusText }}
                 </a-tag>
-                <a-tag v-else>
+                <a-tag v-else-if="instanceStatusText">
                   <InfoCircleOutlined />
                   {{ instanceStatusText }}
                 </a-tag>
               </span>
 
-              <a-tag color="purple"> {{ instanceTypeText }} </a-tag>
+              <a-tag v-if="instanceTypeText" color="purple"> {{ instanceTypeText }} </a-tag>
 
               <span
                 v-if="instanceInfo?.watcher && instanceInfo?.watcher > 1 && !isPhone"
@@ -273,7 +395,9 @@ onMounted(async () => {
               <a-button
                 v-if="item.noConfirm"
                 class="ml-8"
+                :class="item.class ? item.class : ''"
                 :danger="item.type === 'danger'"
+                :disabled="isOpenInstanceLoading"
                 @click="item.click"
               >
                 <component :is="item.icon" />
@@ -285,7 +409,11 @@ onMounted(async () => {
                 :title="t('TXT_CODE_276756b2')"
                 @confirm="item.click"
               >
-                <a-button class="ml-8" :danger="item.type === 'danger'">
+                <a-button
+                  class="ml-8"
+                  :danger="item.type === 'danger'"
+                  :class="item.class ? item.class : ''"
+                >
                   <component :is="item.icon" />
                   {{ item.title }}
                 </a-button>
@@ -314,8 +442,12 @@ onMounted(async () => {
         </template>
       </BetweenMenus>
     </div>
+    <div class="mb-10 justify-end">
+      <TerminalTags :tags="terminalTopTags" />
+    </div>
     <TerminalCore
       v-if="instanceId && daemonId"
+      :use-terminal-hook="terminalHook"
       :instance-id="instanceId"
       :daemon-id="daemonId"
       :height="card.height"
@@ -368,16 +500,18 @@ onMounted(async () => {
       </a-dropdown>
     </template>
     <template #body>
+      <div class="mb-6">
+        <TerminalTags :tags="terminalTopTags" />
+      </div>
       <TerminalCore
         v-if="instanceId && daemonId"
+        :use-terminal-hook="terminalHook"
         :instance-id="instanceId"
         :daemon-id="daemonId"
         :height="card.height"
       />
     </template>
   </CardPanel>
-
-  <Reinstall ref="reinstallDialog" :daemon-id="daemonId ?? ''" :instance-id="instanceId ?? ''" />
 </template>
 
 <style lang="scss" scoped>

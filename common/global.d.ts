@@ -12,11 +12,13 @@ declare global {
     tag: string[];
     endTime: number;
     fileCode: string;
-    processType: string;
+    processType: ProcessType;
     updateCommand: string;
+    runAs: string;
     actionCommandList: any[];
     crlf: number;
     category: number;
+    basePort: number;
 
     // Steam RCON
     enableRcon?: boolean;
@@ -24,14 +26,20 @@ declare global {
     rconPort?: number;
     rconIp?: string;
 
+    // Java
+    java: IInstanceJavaConfig;
+
     // Old fields
     terminalOption: {
       haveColor: boolean;
       pty: boolean;
+      ptyWindowCol: number;
+      ptyWindowRow: number;
     };
     eventTask: {
       autoStart: boolean;
       autoRestart: boolean;
+      autoRestartMaxTimes: number;
       ignore: boolean;
     };
     docker: IGlobalInstanceDockerConfig;
@@ -44,6 +52,25 @@ declare global {
       openFrpTunnelId?: string;
       openFrpToken?: string;
     };
+  }
+
+  type ProcessType = "general" | "docker";
+
+  interface IInstanceJavaConfig {
+    id: string;
+  }
+
+  interface IJavaInfo {
+    fullname: string;
+    path?: string;
+    installTime: number;
+    downloading: boolean;
+  }
+
+  interface IJavaRuntime {
+    info: IJavaInfo;
+    path: string;
+    usingInstances: string[];
   }
 
   interface IGlobalInstanceDockerConfig {
@@ -62,12 +89,32 @@ declare global {
     workingDir?: string;
     env?: string[];
     changeWorkdir?: boolean;
+    memorySwap?: number;
+    memorySwappiness?: number;
+    labels?: string[];
+    capAdd?: string[];
+    capDrop?: string[];
+    devices?: string[];
+    privileged?: boolean;
   }
 
   interface IPanelResponseProtocol {
     data: any;
     timestamp: number;
     status: number;
+  }
+
+  interface IPanelOverviewRemoteMappingResponse {
+    from: {
+      ip: string;
+      port: number;
+      prefix: string;
+    };
+    to: {
+      ip: string;
+      port: number;
+      prefix: string;
+    };
   }
 
   interface IPanelOverviewRemoteResponse {
@@ -104,8 +151,20 @@ declare global {
     ip: string;
     port: number;
     prefix: string;
+    remoteMappings: IPanelOverviewRemoteMappingResponse[];
     available: boolean;
     remarks: string;
+    config: {
+      language: string;
+      uploadSpeedRate: number;
+      downloadSpeedRate: number;
+      maxDownloadFromUrlFileCount: number;
+      portRangeStart: number;
+      portRangeEnd: number;
+      portAssignInterval: number;
+      port: number;
+    };
+    dockerPlatforms?: string[];
   }
 
   interface IPanelOverviewResponse {
@@ -160,6 +219,8 @@ declare global {
     page: string;
     items: ILayoutCard[];
     theme?: {
+      pageTitle: string;
+      logoImage: string;
       backgroundImage: string;
     };
   }
@@ -191,22 +252,40 @@ declare global {
     language: string;
     description: string;
     title: string;
+    category: string;
     runtime: string;
     size: string;
     hardware: string;
     remark: string;
     targetLink?: string;
     author: string;
-    setupInfo?: IJsonData;
+    setupInfo: IGlobalInstanceConfig;
+    gameType: string;
+    image: string;
+    platform: string;
+    tags?: string[];
+    isSummary?: boolean;
+    key?: string;
   }
 
   interface IQuickStartTemplate {
-    remark: string;
     languages: {
       label: string;
       value: string;
     }[];
     packages: IQuickStartPackages[];
+  }
+
+  export interface IBusinessProductInfo {
+    productId: number;
+    title: string;
+    price: number;
+    ispId: number;
+    daemonId: string;
+    payload?: string;
+    remark?: string;
+    hours?: number;
+    daemonUuid?: string;
   }
 }
 

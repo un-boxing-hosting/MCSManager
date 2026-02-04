@@ -372,7 +372,6 @@ export const configData: {
       }
     }
   },
-
   "bungeecord/config.yml": {
     desc: t("TXT_CODE_4fd13f18"),
     config: {
@@ -713,7 +712,7 @@ export const configData: {
           "sleep-not-possible": t("TXT_CODE_1dc0000f"),
           "death-message": {
             stonecutter: t("TXT_CODE_16e2615"),
-            "run-with-scissors": t("TXT_CODE_53e8e5af"),
+            "run-with-scissors": t("TXT_CODE_53e8e5af")
           }
         },
         network: {
@@ -733,29 +732,29 @@ export const configData: {
             "remove-attributes": t("TXT_CODE_c15dcfec"),
             "remove-name-and-lore": t("TXT_CODE_f085ce38")
           },
-          "ender_chest": {
+          ender_chest: {
             "six-rows": t("TXT_CODE_c97dd046"),
             "use-permissions-for-rows": t("TXT_CODE_3489786b")
           },
-          "crying_obsidian": {
+          crying_obsidian: {
             "valid-for-portal-frame": t("TXT_CODE_41ae3d88")
           },
-          "twisting_vines": {
+          twisting_vines: {
             "max-growth-age": t("TXT_CODE_442c0649")
           },
-          "weeping_vines": {
+          weeping_vines: {
             "max-growth-age": t("TXT_CODE_442c0649")
           },
-          "cave_vines": {
+          cave_vines: {
             "max-growth-age": t("TXT_CODE_442c0649")
           },
-          "kelp": {
+          kelp: {
             "max-growth-age": t("TXT_CODE_442c0649")
           },
-          "anvil": {
+          anvil: {
             "cumulative-cost": t("TXT_CODE_4a70853b")
           },
-          "lightning_rod": {
+          lightning_rod: {
             range: t("TXT_CODE_b7f19227")
           },
           "magma-block": {
@@ -836,14 +835,14 @@ export const configData: {
               "explosion-fire": t("TXT_CODE_3be23278"),
               "explosion-effect": t("TXT_CODE_7e0b9953")
             },
-            "big_dripleaf": {
+            big_dripleaf: {
               "tilt-delay": {
                 FULL: t("TXT_CODE_2541ce4d"),
                 UNSTABLE: t("TXT_CODE_9e9c0179"),
-                PARTIAL: t("TXT_CODE_9e9c0179"),
+                PARTIAL: t("TXT_CODE_9e9c0179")
               }
-              },
-            "blue_ice": {
+            },
+            blue_ice: {
               "allow-mob-spawns": t("TXT_CODE_e3116bba"),
               "allow-snow-formation": t("TXT_CODE_66ac4611")
             },
@@ -886,7 +885,7 @@ export const configData: {
             door: {
               "requires-redstone": t("TXT_CODE_8a7c57b9")
             },
-            "dragon_egg": {
+            dragon_egg: {
               teleport: t("TXT_CODE_1348332a")
             },
             "enchantment-table": {
@@ -933,41 +932,41 @@ export const configData: {
               "damage-when-sneaking": t("TXT_CODE_55c91a9b"),
               "damage-with-frost-walker": t("TXT_CODE_5635dd6b")
             },
-            "nether_wart": {
+            nether_wart: {
               "affected-by-bonemeal": t("TXT_CODE_553c6ed2")
             },
             observer: {
               "disable-clock": t("TXT_CODE_5ddf3123")
             },
-            "packed_ice": {
+            packed_ice: {
               "allow-mob-spawns": t("TXT_CODE_e9da0615")
             },
             piston: {
               "block-push-limit": t("TXT_CODE_d15dc89c")
             },
-            "powder_snow": {
+            powder_snow: {
               "bypass-mob-griefing": t("TXT_CODE_9dc4ee75")
             },
             "powered-rail": {
               "activation-range": t("TXT_CODE_b3581555")
             },
-            "respawn_anchor": {
+            respawn_anchor: {
               explode: t("TXT_CODE_99fab05d"),
               "explosion-power": t("TXT_CODE_d1509da0"),
               "explosion-fire": t("TXT_CODE_3be23278"),
               "explosion-effect": t("TXT_CODE_7e0b9953")
             },
-            "sculk_shrieker": {
+            sculk_shrieker: {
               "can-summon-default": t("TXT_CODE_99f8edf0")
             },
-            "shulker_box": {
+            shulker_box: {
               "allow-oversized-stacks": t("TXT_CODE_a8a375ae")
             },
             sign: {
               "allow-colors": t("TXT_CODE_479389a")
             },
             slab: {
-             "break-individual-slabs-when-sneaking": t("TXT_CODE_2a370f1c")
+              "break-individual-slabs-when-sneaking": t("TXT_CODE_2a370f1c")
             },
             spawner: {
               "deactivate-by-redstone": t("TXT_CODE_a4efbd21"),
@@ -984,10 +983,10 @@ export const configData: {
             stonecutter: {
               damage: t("TXT_CODE_e4895a21")
             },
-            "sugar_cane": {
+            sugar_cane: {
               "affected-by-bonemeal": t("TXT_CODE_fe402f41")
             },
-            "turtle_egg": {
+            turtle_egg: {
               "break-from-exp-orbs": t("TXT_CODE_a132c796"),
               "break-from-items": t("TXT_CODE_b5253fae"),
               "break-from-minecarts": t("TXT_CODE_a0a00fc0"),
@@ -1006,7 +1005,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_facd4d3c"),
               "respect-nbt": t("TXT_CODE_5d488270"),
               attributes: {
-                "max_health": t("TXT_CODE_ce4a3230"),
+                max_health: t("TXT_CODE_ce4a3230"),
                 scale: t("TXT_CODE_2f87036a")
               }
             },
@@ -1016,7 +1015,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_ce4a3230"),
+                max_health: t("TXT_CODE_ce4a3230"),
                 scale: t("TXT_CODE_2f87036a")
               }
             },
@@ -1026,7 +1025,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_ce4a3230"),
+                max_health: t("TXT_CODE_ce4a3230"),
                 scale: t("TXT_CODE_2f87036a")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1038,14 +1037,14 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "ridable-max-y": t("TXT_CODE_3dbf8890"),
               attributes: {
-                "follow_range": t("TXT_CODE_6f0a5984"),
-                "knockback_resistance": t("TXT_CODE_dd0a8173"),
-                "movement_speed": t("TXT_CODE_66b7b26e"),
-                "flying_speed": t("TXT_CODE_91ebfa75"),
+                follow_range: t("TXT_CODE_6f0a5984"),
+                knockback_resistance: t("TXT_CODE_dd0a8173"),
+                movement_speed: t("TXT_CODE_66b7b26e"),
+                flying_speed: t("TXT_CODE_91ebfa75"),
                 armor: t("TXT_CODE_49ab8e74"),
-                "armor_toughness": t("TXT_CODE_37931fa9"),
-                "attack_knockback": t("TXT_CODE_ed510830"),
-                "max_health": t("TXT_CODE_e08dfec5"),
+                armor_toughness: t("TXT_CODE_37931fa9"),
+                attack_knockback: t("TXT_CODE_ed510830"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1061,10 +1060,10 @@ export const configData: {
               "can-work-in-rain": t("TXT_CODE_ac0754f7"),
               "dies-after-sting": t("TXT_CODE_9fd05002"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8"),
+              "always-drop-exp": t("TXT_CODE_c535fb8")
             },
             blaze: {
               ridable: t("TXT_CODE_6c94f562"),
@@ -1073,8 +1072,8 @@ export const configData: {
               "ridable-max-y": t("TXT_CODE_3dbf8890"),
               "takes-damage-from-water": t("TXT_CODE_6cfeb776"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3"),
+                max_health: t("TXT_CODE_e08dfec5"),
+                scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
             },
@@ -1083,7 +1082,7 @@ export const configData: {
               controllable: t("TXT_CODE_4f64db47"),
               "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               }
             },
@@ -1118,7 +1117,7 @@ export const configData: {
               },
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1129,7 +1128,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1142,7 +1141,7 @@ export const configData: {
               retaliate: t("TXT_CODE_11cba563"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1152,7 +1151,7 @@ export const configData: {
               controllable: t("TXT_CODE_4f64db47"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1169,7 +1168,7 @@ export const configData: {
                 damage: t("TXT_CODE_7bcf35c1")
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1179,7 +1178,7 @@ export const configData: {
               controllable: t("TXT_CODE_4f64db47"),
               "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               }
             },
@@ -1194,10 +1193,10 @@ export const configData: {
               "naturally-charged-chance": t("TXT_CODE_6b1984c0"),
               "explode-when-killed": t("TXT_CODE_95b08ec3"),
               "health-impacts-explosion": t("TXT_CODE_f1ed28e6"),
-                attributes: {
-                  "max_health": t("TXT_CODE_e08dfec5"),
-                  scale: t("TXT_CODE_341bc7f3")
-                },
+              attributes: {
+                max_health: t("TXT_CODE_e08dfec5"),
+                scale: t("TXT_CODE_341bc7f3")
+              },
               "head-visibility-percent": t("TXT_CODE_952c2697"),
               "always-drop-exp": t("TXT_CODE_c535fb8")
             },
@@ -1213,25 +1212,25 @@ export const configData: {
                 damage: t("TXT_CODE_342d5959")
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
-            }, 
+            },
             donkey: {
               "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": {
+                max_health: {
                   min: t("TXT_CODE_c9f303dd"),
                   max: t("TXT_CODE_e08dfec5")
                 },
-                "jump_strength": {
+                jump_strength: {
                   min: t("TXT_CODE_e1276b33"),
                   max: t("TXT_CODE_87c20d47")
                 },
-                "movement_speed": {
+                movement_speed: {
                   min: t("TXT_CODE_fff00e2b"),
                   max: t("TXT_CODE_a8fe5e68")
                 }
@@ -1250,9 +1249,9 @@ export const configData: {
                 "try-existing-chickens": t("TXT_CODE_9e5eb2a")
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3"),
-                "spawn_reinforcements": t("TXT_CODE_b18c34fd")
+                spawn_reinforcements: t("TXT_CODE_b18c34fd")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
             },
@@ -1261,7 +1260,7 @@ export const configData: {
               controllable: t("TXT_CODE_4f64db47"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1276,7 +1275,7 @@ export const configData: {
               "bypass-mob-griefing": t("TXT_CODE_a7813c72"),
               "can-ride-vehicles": t("TXT_CODE_1b858414"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               }
             },
@@ -1290,11 +1289,12 @@ export const configData: {
               "bypass-mob-griefing": t("TXT_CODE_662ae77"),
               "takes-damage-from-water": t("TXT_CODE_6cfeb776"),
               "aggressive-towards-endermites": t("TXT_CODE_f8501690"),
-              "aggressive-towards-endermites-only-spawned-by-player-thrown-ender-pearls": t("TXT_CODE_7bdd0634"),
+              "aggressive-towards-endermites-only-spawned-by-player-thrown-ender-pearls":
+                t("TXT_CODE_7bdd0634"),
               "ignore-players-wearing-dragon-head": t("TXT_CODE_193605ab"),
               "disable-player-stare-aggression": t("TXT_CODE_fcb08d61"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1305,7 +1305,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1317,7 +1317,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "bypass-mob-griefing": t("TXT_CODE_88f7082"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1331,7 +1331,7 @@ export const configData: {
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               "bypass-mob-griefing": t("TXT_CODE_1471ac98"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1350,7 +1350,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "ridable-max-y": t("TXT_CODE_3dbf8890"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1367,7 +1367,7 @@ export const configData: {
               "have-ai": t("TXT_CODE_e35de72b"),
               "have-hostile-ai": t("TXT_CODE_7d81030f"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1378,7 +1378,7 @@ export const configData: {
               "can-fly": t("TXT_CODE_e95f3a9f"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1390,7 +1390,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1400,7 +1400,7 @@ export const configData: {
               controllable: t("TXT_CODE_4f64db47"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1412,7 +1412,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1422,15 +1422,15 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": {
+                max_health: {
                   min: t("TXT_CODE_c9f303dd"),
                   max: t("TXT_CODE_e08dfec5")
                 },
-                "jump_strength": {
+                jump_strength: {
                   min: t("TXT_CODE_e1276b33"),
                   max: t("TXT_CODE_87c20d47")
                 },
-                "movement_speed": {
+                movement_speed: {
                   min: t("TXT_CODE_fff00e2b"),
                   max: t("TXT_CODE_a8fe5e68")
                 }
@@ -1448,9 +1448,9 @@ export const configData: {
                 "try-existing-chickens": t("TXT_CODE_9e5eb2a")
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3"),
-                "spawn_reinforcements": t("TXT_CODE_b18c34fd")
+                spawn_reinforcements: t("TXT_CODE_b18c34fd")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
             },
@@ -1463,7 +1463,7 @@ export const configData: {
               "movement-speed": t("TXT_CODE_66b7b26e"),
               "follow-range": t("TXT_CODE_6f0a5984"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1478,7 +1478,7 @@ export const configData: {
               "can-swim": t("TXT_CODE_860e2ce"),
               "poppy-calms-anger": t("TXT_CODE_8deb2054"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1486,20 +1486,20 @@ export const configData: {
             llama: {
               ridable: t("TXT_CODE_6c94f562"),
               controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"), 
+              "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               "join-caravans": t("TXT_CODE_ccc0fec7"),
               attributes: {
-                "max_health": {
+                max_health: {
                   min: t("TXT_CODE_c9f303dd"),
                   max: t("TXT_CODE_e08dfec5")
                 },
-                "jump_strength": {
+                jump_strength: {
                   min: t("TXT_CODE_e1276b33"),
                   max: t("TXT_CODE_87c20d47")
                 },
-                "movement_speed": {
+                movement_speed: {
                   min: t("TXT_CODE_fff00e2b"),
                   max: t("TXT_CODE_a8fe5e68")
                 }
@@ -1512,8 +1512,8 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_20bf7fdd"),
-                "attack_damage": t("TXT_CODE_a1833a27"),
+                max_health: t("TXT_CODE_20bf7fdd"),
+                attack_damage: t("TXT_CODE_a1833a27")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
             },
@@ -1524,7 +1524,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1534,15 +1534,15 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": {
+                max_health: {
                   min: t("TXT_CODE_c9f303dd"),
                   max: t("TXT_CODE_e08dfec5")
                 },
-                "jump_strength": {
+                jump_strength: {
                   min: t("TXT_CODE_e1276b33"),
                   max: t("TXT_CODE_87c20d47")
                 },
-                "movement_speed": {
+                movement_speed: {
                   min: t("TXT_CODE_fff00e2b"),
                   max: t("TXT_CODE_a8fe5e68")
                 }
@@ -1557,7 +1557,7 @@ export const configData: {
               "spawn-below-sea-level": t("TXT_CODE_f8bb9f10"),
               "breeeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1569,7 +1569,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1582,7 +1582,7 @@ export const configData: {
               "ridable-max-y": t("TXT_CODE_3dbf8890"),
               "can-breed": t("TXT_CODE_a0a99beb"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1620,9 +1620,9 @@ export const configData: {
                 }
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3"),
-                "attack_damage": t("TXT_CODE_b0794aeb")
+                attack_damage: t("TXT_CODE_b0794aeb")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
             },
@@ -1634,7 +1634,7 @@ export const configData: {
               "give-saddle-back": t("TXT_CODE_806441b5"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1647,7 +1647,7 @@ export const configData: {
               "bypass-mob-griefing": t("TXT_CODE_20e4ab72"),
               "portal-spawn-modifier": t("TXT_CODE_5020d183"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "head-visibility-percent": t("TXT_CODE_952c2697"),
@@ -1659,7 +1659,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1671,7 +1671,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "bypass-mob-griefing": t("TXT_CODE_aae43e39"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1684,7 +1684,7 @@ export const configData: {
               "breedable-item": t("TXT_CODE_c7952636"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_22c68314")
@@ -1705,7 +1705,7 @@ export const configData: {
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               "bypass-mob-griefing": t("TXT_CODE_b5e19c1"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1718,7 +1718,7 @@ export const configData: {
               "bypass-mob-griefing": t("TXT_CODE_e2be1e70"),
               "griefable-blocks": t("TXT_CODE_c840ab37"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8"),
@@ -1729,7 +1729,7 @@ export const configData: {
               controllable: t("TXT_CODE_4f64db47"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1742,7 +1742,7 @@ export const configData: {
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               "bypass-mob-griefing": t("TXT_CODE_95c65dc1"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1761,7 +1761,7 @@ export const configData: {
                 "random-color": t("TXT_CODE_c51b86ff")
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1773,10 +1773,10 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "bypass-mob-griefing": t("TXT_CODE_1c38439b"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3"),
-                "movement_speed": t("TXT_CODE_66b7b26e"),
-                "attack_damage": t("TXT_CODE_73c7b4b")
+                movement_speed: t("TXT_CODE_66b7b26e"),
+                attack_damage: t("TXT_CODE_73c7b4b")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
             },
@@ -1786,7 +1786,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "head-visibility-percent": t("TXT_CODE_952c2697"),
@@ -1800,15 +1800,15 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": {
+                max_health: {
                   min: t("TXT_CODE_c9f303dd"),
                   max: t("TXT_CODE_e08dfec5")
                 },
-                "jump_strength": {
+                jump_strength: {
                   min: t("TXT_CODE_e1276b33"),
                   max: t("TXT_CODE_87c20d47")
                 },
-                "movement_speed": {
+                movement_speed: {
                   min: t("TXT_CODE_fff00e2b"),
                   max: t("TXT_CODE_a8fe5e68")
                 }
@@ -1821,8 +1821,8 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "ridable-in-water": t("TXT_CODE_93610b08"),
               attributes: {
-                "max_health": t("TXT_CODE_20bf7fdd"),
-                "attack_damage": t("TXT_CODE_8cc8e9e2")
+                max_health: t("TXT_CODE_20bf7fdd"),
+                attack_damage: t("TXT_CODE_8cc8e9e2")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
             },
@@ -1832,7 +1832,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "breeeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5")
+                max_health: t("TXT_CODE_e08dfec5")
               }
             },
             snow_golem: {
@@ -1848,7 +1848,7 @@ export const configData: {
               "bypass-mob-griefing": t("TXT_CODE_238c4c01"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1859,7 +1859,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1873,7 +1873,7 @@ export const configData: {
               "water-offset-check": t("TXT_CODE_56197d09"),
               "can-fly": t("TXT_CODE_e95f3a9f"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1884,7 +1884,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1897,7 +1897,7 @@ export const configData: {
               "breeeding-delay-ticks": t("TXT_CODE_f0127843"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1905,7 +1905,7 @@ export const configData: {
             tadpole: {
               ridable: t("TXT_CODE_6c94f562"),
               controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
+              "ridable-in-water": t("TXT_CODE_93610b08")
             },
             trader_llama: {
               ridable: t("TXT_CODE_6c94f562"),
@@ -1914,15 +1914,15 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": {
+                max_health: {
                   min: t("TXT_CODE_c9f303dd"),
                   max: t("TXT_CODE_e08dfec5")
                 },
-                "jump_strength": {
+                jump_strength: {
                   min: t("TXT_CODE_e1276b33"),
                   max: t("TXT_CODE_87c20d47")
                 },
-                "movement_speed": {
+                movement_speed: {
                   min: t("TXT_CODE_fff00e2b"),
                   max: t("TXT_CODE_a8fe5e68")
                 }
@@ -1934,7 +1934,7 @@ export const configData: {
               controllable: t("TXT_CODE_4f64db47"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1946,7 +1946,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "breeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1958,7 +1958,7 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "ridable-max-y": t("TXT_CODE_3dbf8890"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -1974,7 +1974,7 @@ export const configData: {
               "allow-trading": t("TXT_CODE_e612a8a2"),
               "display-trade-item": t("TXT_CODE_34100777"),
               lobotomize: {
-                "enabled": t("TXT_CODE_e679197e"),
+                enabled: t("TXT_CODE_e679197e"),
                 "check-interval": t("TXT_CODE_34999278"),
                 "wait-until-trade-locked": t("TXT_CODE_adcce2c7")
               },
@@ -1992,7 +1992,7 @@ export const configData: {
                 "nearest-bed-sensor": t("TXT_CODE_6ac61ca1")
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_f6dacecc")
@@ -2006,7 +2006,7 @@ export const configData: {
                 "spawn-chance": t("TXT_CODE_877ef60c")
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -2020,7 +2020,7 @@ export const configData: {
               "allow-trading": t("TXT_CODE_c0fcee47"),
               "follow-emerald-blocks": t("TXT_CODE_7d25f076"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -2036,7 +2036,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -2054,7 +2054,7 @@ export const configData: {
               "health-regen-delay": t("TXT_CODE_233dd4f8"),
               "bypass-mob-griefing": t("TXT_CODE_f6468fe8"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -2065,7 +2065,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -2080,7 +2080,7 @@ export const configData: {
               "default-collar-color": t("TXT_CODE_feaa97d4"),
               "breeeding-delay-ticks": t("TXT_CODE_f0127843"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -2091,7 +2091,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
@@ -2109,12 +2109,12 @@ export const configData: {
               "aggressive-towards-villager-when-lagging": t("TXT_CODE_e95ee23f"),
               "bypass-mob-griefing": t("TXT_CODE_c709edac"),
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3"),
-                "spawn_reinforcements": t("TXT_CODE_b18c34fd")
+                spawn_reinforcements: t("TXT_CODE_b18c34fd")
               },
               "head-visibility-percent": t("TXT_CODE_952c2697"),
-              "always-drop-exp": t("TXT_CODE_c535fb8"),
+              "always-drop-exp": t("TXT_CODE_c535fb8")
             },
             zombie_horse: {
               ridable: t("TXT_CODE_6c94f562"),
@@ -2123,15 +2123,15 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               "spawn-chance": t("TXT_CODE_4d5432bd"),
               attributes: {
-                "max_health": {
+                max_health: {
                   min: t("TXT_CODE_c9f303dd"),
                   max: t("TXT_CODE_e08dfec5")
                 },
-                "jump_strength": {
+                jump_strength: {
                   min: t("TXT_CODE_e1276b33"),
                   max: t("TXT_CODE_87c20d47")
                 },
-                "movement_speed": {
+                movement_speed: {
                   min: t("TXT_CODE_fff00e2b"),
                   max: t("TXT_CODE_a8fe5e68")
                 }
@@ -2144,7 +2144,7 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_93610b08"),
               "takes-damage-from-water": t("TXT_CODE_61700077"),
               cure: t("TXT_CODE_83d5cbbe"),
-              "curing_time": {
+              curing_time: {
                 min: t("TXT_CODE_382ec256"),
                 max: t("TXT_CODE_1a77954")
               },
@@ -2154,9 +2154,9 @@ export const configData: {
                 "try-existing-chickens": t("TXT_CODE_9e5eb2a")
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3"),
-                "spawn_reinforcements": t("TXT_CODE_b18c34fd")
+                spawn_reinforcements: t("TXT_CODE_b18c34fd")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
             },
@@ -2172,9 +2172,9 @@ export const configData: {
                 "try-existing-chickens": t("TXT_CODE_9e5eb2a")
               },
               attributes: {
-                "max_health": t("TXT_CODE_e08dfec5"),
+                max_health: t("TXT_CODE_e08dfec5"),
                 scale: t("TXT_CODE_341bc7f3"),
-                "spawn_reinforcements": t("TXT_CODE_b18c34fd")
+                spawn_reinforcements: t("TXT_CODE_b18c34fd")
               },
               "always-drop-exp": t("TXT_CODE_c535fb8")
             }
@@ -2200,7 +2200,7 @@ export const configData: {
             "do-fall-damage": t("TXT_CODE_c9d34339")
           },
           "clamp-explosion-radius": t("TXT_CODE_c59f077d"),
-            "daylight-cycle-ticks": {
+          "daylight-cycle-ticks": {
             daytime: t("TXT_CODE_3beb6e5c"),
             nighttime: t("TXT_CODE_d928da57")
           },
@@ -2255,13 +2255,13 @@ export const configData: {
                 campfires: t("TXT_CODE_4a9822f")
               }
             },
-            "shulker_box": {
+            shulker_box: {
               "drop-contents-when-destroyed": t("TXT_CODE_d4dafc41")
             },
             compass: {
               "holding-shows-bossbar": t("TXT_CODE_4126fc53")
             },
-            "glow_berries": {
+            glow_berries: {
               "eat-glow-duration": t("TXT_CODE_bea85b64")
             },
             "ender-pearl": {
@@ -2723,7 +2723,7 @@ export const configData: {
     desc: t("TXT_CODE_9213f8e3"),
     config: {
       info: {
-        version: t("TXT_CODE_7214ead7"),
+        version: t("TXT_CODE_7214ead7")
       },
       "sentry-dsn": t("TXT_CODE_2e0e1dfa"),
       projectile: {
@@ -2742,7 +2742,7 @@ export const configData: {
       "enable-books": t("TXT_CODE_33d91ef6"),
       "allow-end-crystal-respawn": t("TXT_CODE_e707d042"),
       dab: {
-        "enabled": t("TXT_CODE_f738c45c"),
+        enabled: t("TXT_CODE_f738c45c"),
         "start-distance": t("TXT_CODE_bd2534da"),
         "max-tick-freq": t("TXT_CODE_a02a0849"),
         "activation-dist-mod": t("TXT_CODE_cfe187b0"),
@@ -2876,37 +2876,37 @@ export const configData: {
   "forge/fml.toml": {
     desc: t("TXT_CODE_7e6a82d8"),
     config: {
-      "earlyWindowHeight": t("TXT_CODE_341dfd11"),
-      "versionCheck": t("TXT_CODE_ea04fb32"),
-      "earlyWindowControl": t("TXT_CODE_703cdd68"),
-      "earlyWindowFBScale": t("TXT_CODE_ecc99fb6"),
-      "earlyWindowProvider": t("TXT_CODE_55e91545"),
-      "earlyWindowWidth": t("TXT_CODE_bd1ff011"),
-      "earlyWindowMaximized": t("TXT_CODE_2ce63943"),
-      "defaultConfigPath": t("TXT_CODE_b02f295d"),
-      "disableOptimizedDFU": t("TXT_CODE_1f3aac40"),
-      "earlyWindowSkipGLVersions": t("TXT_CODE_44c67809"),
-      "maxThreads": t("TXT_CODE_e75ed0b5"),
-      "earlyWindowSquir": t("TXT_CODE_4fe284cd"),
-      "disableConfigWatcher": t("TXT_CODE_7c25c81a")
+      earlyWindowHeight: t("TXT_CODE_341dfd11"),
+      versionCheck: t("TXT_CODE_ea04fb32"),
+      earlyWindowControl: t("TXT_CODE_703cdd68"),
+      earlyWindowFBScale: t("TXT_CODE_ecc99fb6"),
+      earlyWindowProvider: t("TXT_CODE_55e91545"),
+      earlyWindowWidth: t("TXT_CODE_bd1ff011"),
+      earlyWindowMaximized: t("TXT_CODE_2ce63943"),
+      defaultConfigPath: t("TXT_CODE_b02f295d"),
+      disableOptimizedDFU: t("TXT_CODE_1f3aac40"),
+      earlyWindowSkipGLVersions: t("TXT_CODE_44c67809"),
+      maxThreads: t("TXT_CODE_e75ed0b5"),
+      earlyWindowSquir: t("TXT_CODE_4fe284cd"),
+      disableConfigWatcher: t("TXT_CODE_7c25c81a")
     }
   },
   "neoforge/neoforge-server.toml": {
     desc: t("TXT_CODE_5b6f3691"),
     config: {
-      "removeErroringBlockEntities": t("TXT_CODE_f4c15e78"),
-      "removeErroringEntities": t("TXT_CODE_c53c342e"),
-      "fullBoundingBoxLadders": t("TXT_CODE_1fec78cc"),
-      "permissionHandler": t("TXT_CODE_dd65f101"),
-      "advertiseDedicatedServerToLan": t("TXT_CODE_176b2151")
+      removeErroringBlockEntities: t("TXT_CODE_f4c15e78"),
+      removeErroringEntities: t("TXT_CODE_c53c342e"),
+      fullBoundingBoxLadders: t("TXT_CODE_1fec78cc"),
+      permissionHandler: t("TXT_CODE_dd65f101"),
+      advertiseDedicatedServerToLan: t("TXT_CODE_176b2151")
     }
   },
   "neoforge/neoforge-common.toml": {
     desc: t("TXT_CODE_1efc7c5f"),
     config: {
-      "logUntranslatedItemTagWarnings": t("TXT_CODE_cf393058"),
-      "logLegacyTagWarnings": t("TXT_CODE_b2f1310e"),
-      "attributeAdvancedTooltipDebugInfo": t("TXT_CODE_94d885d1")
+      logUntranslatedItemTagWarnings: t("TXT_CODE_cf393058"),
+      logLegacyTagWarnings: t("TXT_CODE_b2f1310e"),
+      attributeAdvancedTooltipDebugInfo: t("TXT_CODE_94d885d1")
     }
   },
   //   "mcdr/permission.yml": {},
@@ -3051,6 +3051,243 @@ export const configData: {
         RESTMaximumRequestsPerInterval: t("TXT_CODE_8298bfde"),
         RESTRequestBucketDecreaseIntervalMinutes: t("TXT_CODE_5b190bc4"),
         ApplicationRestTokens: t("TXT_CODE_f0ca2761")
+      }
+    }
+  },
+  "leaves/leaves.yml": {
+    desc: t("TXT_CODE_LEAVES_DESCRIPTION"),
+    config: {
+      "config-version": t("TXT_CODE_LEAVES_CONFIG_VERSION"),
+      settings: {
+        misc: {
+          "auto-update": {
+            enable: t("TXT_CODE_LEAVES_AUTO_UPDATE_ENABLE"),
+            "download-source": t("TXT_CODE_LEAVES_DOWNLOAD_SOURCE"),
+            "allow-experimental": t("TXT_CODE_LEAVES_ALLOW_EXPERIMENTAL")
+          },
+          "extra-yggdrasil-service": {
+            enable: t("TXT_CODE_LEAVES_YGGDRASIL_ENABLE"),
+            "login-protect": t("TXT_CODE_LEAVES_LOGIN_PROTECT")
+          },
+          "disable-method-profiler": t("TXT_CODE_LEAVES_DISABLE_METHOD_PROFILER"),
+          "no-chat-sign": t("TXT_CODE_LEAVES_NO_CHAT_SIGN"),
+          "dont-respond-ping-before-start-fully": t("TXT_CODE_LEAVES_DONT_RESPOND_PING"),
+          "server-lang": t("TXT_CODE_LEAVES_SERVER_LANG"),
+          "server-mod-name": t("TXT_CODE_LEAVES_SERVER_MOD_NAME"),
+          "bstats-privacy-mode": t("TXT_CODE_LEAVES_BSTATS_PRIVACY_MODE"),
+          "force-minecraft-command": t("TXT_CODE_LEAVES_FORCE_MINECRAFT_COMMAND"),
+          "leaves-packet-event": t("TXT_CODE_LEAVES_PACKET_EVENT")
+        },
+        modify: {
+          fakeplayer: {
+            enable: t("TXT_CODE_LEAVES_FAKEPLAYER_ENABLE"),
+            limit: t("TXT_CODE_LEAVES_FAKEPLAYER_LIMIT"),
+            prefix: t("TXT_CODE_LEAVES_FAKEPLAYER_PREFIX"),
+            suffix: t("TXT_CODE_LEAVES_FAKEPLAYER_SUFFIX"),
+            "regen-amount": t("TXT_CODE_LEAVES_FAKEPLAYER_REGEN_AMOUNT"),
+            "always-send-data": t("TXT_CODE_LEAVES_FAKEPLAYER_ALWAYS_SEND_DATA"),
+            "resident-fakeplayer": t("TXT_CODE_LEAVES_FAKEPLAYER_RESIDENT"),
+            "open-fakeplayer-inventory": t("TXT_CODE_LEAVES_FAKEPLAYER_OPEN_INVENTORY"),
+            "skip-sleep-check": t("TXT_CODE_LEAVES_FAKEPLAYER_SKIP_SLEEP_CHECK"),
+            "spawn-phantom": t("TXT_CODE_LEAVES_FAKEPLAYER_SPAWN_PHANTOM"),
+            "use-action": t("TXT_CODE_LEAVES_FAKEPLAYER_USE_ACTION"),
+            "modify-config": t("TXT_CODE_LEAVES_FAKEPLAYER_MODIFY_CONFIG"),
+            "manual-save-and-load": t("TXT_CODE_LEAVES_FAKEPLAYER_MANUAL_SAVE"),
+            "cache-skin": t("TXT_CODE_LEAVES_FAKEPLAYER_CACHE_SKIN"),
+            "tick-type": t("TXT_CODE_LEAVES_FAKEPLAYER_TICK_TYPE")
+          },
+          "elytra-aeronautics": {
+            "no-chunk-load": t("TXT_CODE_LEAVES_ELYTRA_NO_CHUNK_LOAD"),
+            "no-chunk-height": t("TXT_CODE_LEAVES_ELYTRA_NO_CHUNK_HEIGHT"),
+            "no-chunk-speed": t("TXT_CODE_LEAVES_ELYTRA_NO_CHUNK_SPEED"),
+            message: t("TXT_CODE_LEAVES_ELYTRA_MESSAGE"),
+            "message-start": t("TXT_CODE_LEAVES_ELYTRA_MESSAGE_START"),
+            "message-end": t("TXT_CODE_LEAVES_ELYTRA_MESSAGE_END")
+          },
+          "redstone-shears-wrench": t("TXT_CODE_LEAVES_REDSTONE_SHEARS_WRENCH"),
+          "budding-amethyst-can-push-by-piston": t("TXT_CODE_LEAVES_AMETHYST_PUSHABLE"),
+          "spectator-dont-get-advancement": t("TXT_CODE_LEAVES_SPECTATOR_NO_ADVANCEMENT"),
+          "stick-change-armorstand-arm-status": t("TXT_CODE_LEAVES_STICK_CHANGE_ARMORSTAND"),
+          "snowball-and-egg-can-knockback-player": t("TXT_CODE_LEAVES_SNOWBALL_KNOCKBACK"),
+          "flatten-triangular-distribution": t("TXT_CODE_LEAVES_FLATTEN_TRIANGULAR_DIST"),
+          "player-operation-limiter": t("TXT_CODE_LEAVES_PLAYER_OPERATION_LIMITER"),
+          "renewable-elytra": t("TXT_CODE_LEAVES_RENEWABLE_ELYTRA"),
+          "stackable-shulker-boxes": t("TXT_CODE_LEAVES_STACKABLE_SHULKER_BOXES"),
+          "force-void-trade": t("TXT_CODE_LEAVES_FORCE_VOID_TRADE"),
+          "mc-technical-survival-mode": t("TXT_CODE_LEAVES_TECHNICAL_SURVIVAL_MODE"),
+          "return-nether-portal-fix": t("TXT_CODE_LEAVES_RETURN_NETHER_PORTAL_FIX"),
+          "use-vanilla-random": t("TXT_CODE_LEAVES_USE_VANILLA_RANDOM"),
+          "fix-update-suppression-crash": t("TXT_CODE_LEAVES_FIX_UPDATE_SUPPRESSION"),
+          "bedrock-break-list": t("TXT_CODE_LEAVES_BEDROCK_BREAK_LIST"),
+          "disable-distance-check-for-use-item": t("TXT_CODE_LEAVES_DISABLE_DISTANCE_CHECK"),
+          "no-feather-falling-trample": t("TXT_CODE_LEAVES_NO_FEATHER_FALLING_TRAMPLE"),
+          "shared-villager-discounts": t("TXT_CODE_LEAVES_SHARED_VILLAGER_DISCOUNTS"),
+          "disable-check-out-of-order-command": t("TXT_CODE_LEAVES_DISABLE_OUT_OF_ORDER_CHECK"),
+          "despawn-enderman-with-block": t("TXT_CODE_LEAVES_DESPAWN_ENDERMAN_WITH_BLOCK"),
+          "creative-no-clip": t("TXT_CODE_LEAVES_CREATIVE_NO_CLIP"),
+          "shave-snow-layers": t("TXT_CODE_LEAVES_SHAVE_SNOW_LAYERS"),
+          "ignore-lc": t("TXT_CODE_LEAVES_IGNORE_LC"),
+          "disable-packet-limit": t("TXT_CODE_LEAVES_DISABLE_PACKET_LIMIT"),
+          "lava-riptide": t("TXT_CODE_LEAVES_LAVA_RIPTIDE"),
+          "no-block-update-command": t("TXT_CODE_LEAVES_NO_BLOCK_UPDATE_COMMAND"),
+          "no-tnt-place-update": t("TXT_CODE_LEAVES_NO_TNT_PLACE_UPDATE"),
+          "raider-die-skip-self-raid-check": t("TXT_CODE_LEAVES_RAIDER_DIE_SKIP_RAID_CHECK"),
+          "container-passthrough": t("TXT_CODE_LEAVES_CONTAINER_PASSTHROUGH"),
+          "avoid-anvil-too-expensive": t("TXT_CODE_LEAVES_AVOID_ANVIL_EXPENSIVE"),
+          "bow-infinity-fix": t("TXT_CODE_LEAVES_BOW_INFINITY_FIX"),
+          "hopper-counter": t("TXT_CODE_LEAVES_HOPPER_COUNTER"),
+          "spider-jockeys-drop-gapples": t("TXT_CODE_LEAVES_SPIDER_JOCKEYS_DROP_GAPPLES"),
+          "renewable-deepslate": t("TXT_CODE_LEAVES_RENEWABLE_DEEPSLATE"),
+          "renewable-sponges": t("TXT_CODE_LEAVES_RENEWABLE_SPONGES"),
+          "renewable-coral": t("TXT_CODE_LEAVES_RENEWABLE_CORAL"),
+          "fast-resume": t("TXT_CODE_LEAVES_FAST_RESUME"),
+          "force-peaceful-mode-switch": {
+            tick: t("TXT_CODE_LEAVES_FORCE_PEACEFUL_TICK")
+          },
+          "disable-vault-blacklist": t("TXT_CODE_LEAVES_DISABLE_VAULT_BLACKLIST"),
+          "minecraft-old": {
+            "void-trade": t("TXT_CODE_LEAVES_OLD_VOID_TRADE"),
+            "block-updater": {
+              "instant-block-updater-reintroduced": t("TXT_CODE_LEAVES_INSTANT_BLOCK_UPDATER"),
+              "cce-update-suppression": t("TXT_CODE_LEAVES_CCE_UPDATE_SUPPRESSION"),
+              "redstone-wire-dont-connect-if-on-trapdoor": t(
+                "TXT_CODE_LEAVES_REDSTONE_NO_TRAPDOOR_CONNECT"
+              ),
+              "old-block-entity-behaviour": t("TXT_CODE_LEAVES_OLD_BLOCK_ENTITY_BEHAVIOUR")
+            },
+            "shears-in-dispenser-can-zero-amount": t("TXT_CODE_LEAVES_SHEARS_ZERO_AMOUNT"),
+            "armor-stand-cant-kill-by-mob-projectile": t(
+              "TXT_CODE_LEAVES_ARMOR_STAND_NO_PROJECTILE_KILL"
+            ),
+            "villager-infinite-discounts": t("TXT_CODE_LEAVES_VILLAGER_INFINITE_DISCOUNTS"),
+            "copper-bulb-1gt-delay": t("TXT_CODE_LEAVES_COPPER_BULB_DELAY"),
+            "crafter-1gt-delay": t("TXT_CODE_LEAVES_CRAFTER_DELAY"),
+            "zero-tick-plants": t("TXT_CODE_LEAVES_ZERO_TICK_PLANTS"),
+            "rng-fishing": t("TXT_CODE_LEAVES_RNG_FISHING"),
+            "allow-grindstone-overstacking": t("TXT_CODE_LEAVES_GRINDSTONE_OVERSTACKING"),
+            "allow-entity-portal-with-passenger": t("TXT_CODE_LEAVES_ENTITY_PORTAL_PASSENGER"),
+            "disable-gateway-portal-entity-ticking": t("TXT_CODE_LEAVES_DISABLE_GATEWAY_TICKING"),
+            "disable-LivingEntity-ai-step-alive-check": t("TXT_CODE_LEAVES_DISABLE_AI_STEP_CHECK"),
+            "fix-fortress-mob-spawn": t("TXT_CODE_LEAVES_FIX_FORTRESS_SPAWN"),
+            "old-hopper-suck-in-behavior": t("TXT_CODE_LEAVES_OLD_HOPPER_BEHAVIOR"),
+            "revert-raid-changes": {
+              "allow-bad-omen-trigger-raid": t("TXT_CODE_LEAVES_ALLOW_BAD_OMEN_RAID"),
+              "give-bad-omen-when-kill-patrol-leader": t("TXT_CODE_LEAVES_GIVE_BAD_OMEN"),
+              "use-old-find-spawn-position": t("TXT_CODE_LEAVES_OLD_SPAWN_POSITION"),
+              "skip-height-check": t("TXT_CODE_LEAVES_SKIP_HEIGHT_CHECK")
+            },
+            "allow-anvil-destroy-item-entities": t("TXT_CODE_LEAVES_ANVIL_DESTROY_ITEMS"),
+            "string-tripwire-hook-duplicate": t("TXT_CODE_LEAVES_TRIPWIRE_HOOK_DUPLICATE")
+          }
+        },
+        performance: {
+          "optimized-dragon-respawn": t("TXT_CODE_LEAVES_OPTIMIZED_DRAGON_RESPAWN"),
+          "dont-send-useless-entity-packets": t("TXT_CODE_LEAVES_NO_USELESS_ENTITY_PACKETS"),
+          "enable-suffocation-optimization": t("TXT_CODE_LEAVES_ENABLE_SUFFOCATION_OPTIMIZATION"),
+          "check-spooky-season-once-an-hour": t("TXT_CODE_LEAVES_CHECK_SPOOKY_SEASON"),
+          "inactive-goal-selector-disable": t("TXT_CODE_LEAVES_INACTIVE_GOAL_SELECTOR_DISABLE"),
+          "reduce-entity-allocations": t("TXT_CODE_LEAVES_REDUCE_ENTITY_ALLOCATIONS"),
+          "cache-climb-check": t("TXT_CODE_LEAVES_CACHE_CLIMB_CHECK"),
+          "reduce-chuck-load-and-lookup": t("TXT_CODE_LEAVES_REDUCE_CHUNK_LOAD"),
+          "cache-ignite-odds": t("TXT_CODE_LEAVES_CACHE_IGNITE_ODDS"),
+          "faster-chunk-serialization": t("TXT_CODE_LEAVES_FASTER_CHUNK_SERIALIZATION"),
+          "skip-secondary-POI-sensor-if-absent": t("TXT_CODE_LEAVES_SKIP_SECONDARY_POI_SENSOR"),
+          "store-mob-counts-in-array": t("TXT_CODE_LEAVES_STORE_MOB_COUNTS_IN_ARRAY"),
+          "optimize-noise-generation": t("TXT_CODE_LEAVES_OPTIMIZE_NOISE_GENERATION"),
+          "optimize-sun-burn-tick": t("TXT_CODE_LEAVES_OPTIMIZE_SUN_BURN_TICK"),
+          "optimized-CubePointRange": t("TXT_CODE_LEAVES_OPTIMIZED_CUBE_POINT_RANGE"),
+          "check-frozen-ticks-before-landing-block": t("TXT_CODE_LEAVES_CHECK_FROZEN_TICKS"),
+          "skip-entity-move-if-movement-is-zero": t("TXT_CODE_LEAVES_SKIP_ZERO_MOVEMENT"),
+          "skip-cloning-advancement-criteria": t("TXT_CODE_LEAVES_SKIP_CLONING_ADVANCEMENT"),
+          "skip-negligible-planar-movement-multiplication": t(
+            "TXT_CODE_LEAVES_SKIP_NEGLIGIBLE_MOVEMENT"
+          ),
+          "fix-villagers-dont-release-memory": t("TXT_CODE_LEAVES_FIX_VILLAGERS_MEMORY"),
+          remove: {
+            "tick-guard-lambda": t("TXT_CODE_LEAVES_REMOVE_TICK_GUARD_LAMBDA"),
+            "damage-lambda": t("TXT_CODE_LEAVES_REMOVE_DAMAGE_LAMBDA")
+          }
+        },
+        protocol: {
+          bladeren: {
+            protocol: t("TXT_CODE_LEAVES_BLADEREN_PROTOCOL"),
+            "mspt-sync-protocol": t("TXT_CODE_LEAVES_MSPT_SYNC_PROTOCOL"),
+            "mspt-sync-tick-interval": t("TXT_CODE_LEAVES_MSPT_SYNC_TICK_INTERVAL")
+          },
+          syncmatica: {
+            enable: t("TXT_CODE_LEAVES_SYNCMATICA_ENABLE"),
+            quota: t("TXT_CODE_LEAVES_SYNCMATICA_QUOTA"),
+            "quota-limit": t("TXT_CODE_LEAVES_SYNCMATICA_QUOTA_LIMIT")
+          },
+          pca: {
+            "pca-sync-protocol": t("TXT_CODE_LEAVES_PCA_SYNC_PROTOCOL"),
+            "pca-sync-player-entity": t("TXT_CODE_LEAVES_PCA_SYNC_PLAYER_ENTITY")
+          },
+          appleskin: {
+            protocol: t("TXT_CODE_LEAVES_APPLESKIN_PROTOCOL"),
+            "sync-tick-interval": t("TXT_CODE_LEAVES_APPLESKIN_SYNC_INTERVAL")
+          },
+          servux: {
+            "structure-protocol": t("TXT_CODE_LEAVES_SERVUX_STRUCTURE_PROTOCOL"),
+            "entity-protocol": t("TXT_CODE_LEAVES_SERVUX_ENTITY_PROTOCOL"),
+            "hud-metadata-protocol": t("TXT_CODE_LEAVES_SERVUX_HUD_METADATA_PROTOCOL"),
+            "hud-metadata-protocol-share-seed": t("TXT_CODE_LEAVES_SERVUX_HUD_SHARE_SEED"),
+            "litematics-protocol": t("TXT_CODE_LEAVES_SERVUX_LITEMATICS_PROTOCOL")
+          },
+          "bbor-protocol": t("TXT_CODE_LEAVES_BBOR_PROTOCOL"),
+          "jade-protocol": t("TXT_CODE_LEAVES_JADE_PROTOCOL"),
+          "alternative-block-placement": t("TXT_CODE_LEAVES_ALTERNATIVE_BLOCK_PLACEMENT"),
+          "xaero-map-protocol": t("TXT_CODE_LEAVES_XAERO_MAP_PROTOCOL"),
+          "xaero-map-server-id": t("TXT_CODE_LEAVES_XAERO_MAP_SERVER_ID"),
+          "leaves-carpet-support": t("TXT_CODE_LEAVES_CARPET_SUPPORT"),
+          "lms-paster-protocol": t("TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL"),
+          "rei-server-protocol": t("TXT_CODE_LEAVES_REI_SERVER_PROTOCOL"),
+          "chat-image-protocol": t("TXT_CODE_LEAVES_CHAT_IMAGE_PROTOCOL")
+        },
+        region: {
+          format: t("TXT_CODE_LEAVES_REGION_FORMAT"),
+          linear: {
+            version: t("TXT_CODE_LEAVES_LINEAR_VERSION"),
+            "auto-convert-anvil-to-linear": t("TXT_CODE_LEAVES_AUTO_CONVERT_ANVIL"),
+            "flush-max-threads": t("TXT_CODE_LEAVES_FLUSH_MAX_THREADS"),
+            "flush-delay-ms": t("TXT_CODE_LEAVES_FLUSH_DELAY_MS"),
+            "use-virtual-thread": t("TXT_CODE_LEAVES_USE_VIRTUAL_THREAD"),
+            "compression-level": t("TXT_CODE_LEAVES_COMPRESSION_LEVEL")
+          }
+        },
+        fix: {
+          "vanilla-hopper": t("TXT_CODE_LEAVES_FIX_VANILLA_HOPPER"),
+          "vanilla-display-name": t("TXT_CODE_LEAVES_FIX_VANILLA_DISPLAY_NAME")
+        }
+      }
+    }
+  },
+  "terraria/serverconfig.txt": {
+    desc: t("TXT_CODE_TERRARIA_CONFIG_DESC"),
+    config: {
+      port: t("TXT_CODE_TERRARIA_PORT"),
+      password: t("TXT_CODE_TERRARIA_PASSWORD"),
+      world: t("TXT_CODE_TERRARIA_WORLD"),
+      logpath: t("TXT_CODE_TERRARIA_LOG_PATH"),
+      maxplayers: t("TXT_CODE_TERRARIA_MAX_PLAYERS"),
+      motd: t("TXT_CODE_TERRARIA_MOTD")
+    }
+  },
+  "hytale/config.json": {
+    desc: t("TXT_CODE_HYTALE_CONFIG_DESC"),
+    config: {
+      ServerName: t("TXT_CODE_e59f909f"),
+      MOTD: t("TXT_CODE_b5ebbc0b"),
+      Password: t("TXT_CODE_d417058f"),
+      MaxPlayers: t("TXT_CODE_6702c53e"),
+      MaxViewRadius: t("TXT_CODE_d99ffe16"),
+      Defaults: {
+        World: t("TXT_CODE_2b58a46"),
+        GameMode: t("TXT_CODE_783807df")
+      },
+      DisplayTmpTagsInStrings: t("TXT_CODE_938b5975"),
+      PlayerStorage: {
+        Type: t("TXT_CODE_78d240bf")
       }
     }
   }

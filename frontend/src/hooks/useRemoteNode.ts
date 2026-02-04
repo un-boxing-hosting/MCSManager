@@ -1,11 +1,11 @@
-import { ref, computed } from "vue";
 import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import {
-  editNode as editNodeApi,
   addNode as addNodeApi,
+  connectNode,
   deleteNode as deleteNodeApi,
-  connectNode
+  editNode as editNodeApi
 } from "@/services/apis";
+import { computed, ref } from "vue";
 
 export interface RemoteNodeDetail {
   ip: string;
@@ -13,13 +13,19 @@ export interface RemoteNodeDetail {
   prefix: string;
   remarks: string;
   apiKey?: string;
+  language: string;
+  uploadSpeedRate: number;
+  downloadSpeedRate: number;
+  portRangeStart: number;
+  portRangeEnd: number;
+  portAssignInterval: number;
 }
 
 export function useRemoteNode() {
   const operationForm = ref({
     name: "",
     current: 1,
-    pageSize: 10,
+    pageSize: 8,
     total: 0
   });
   const ALL = "all";
@@ -92,6 +98,7 @@ export function useRemoteNode() {
   };
 
   return {
+    response: state,
     remoteNodes,
     operationForm,
     currentStatus,

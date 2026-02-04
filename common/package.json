@@ -1,10 +1,10 @@
 {
   "name": "mcsmanager-common",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "MCSManager Common layer",
   "main": "dist/index.js",
   "homepage": "https://mcsmanager.com/",
-  "author": "https://github.com/unitwk",
+  "author": "https://github.com/yumao233",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

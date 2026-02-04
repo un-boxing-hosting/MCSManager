@@ -1,21 +1,25 @@
-import { $t } from "../i18n";
 import fs from "fs-extra";
+import path from "path";
+import Instance from "../entity/instance/instance";
+import { $t } from "../i18n";
+import logger from "../service/log";
 import * as protocol from "../service/protocol";
 import { routerApp } from "../service/router";
 import InstanceSubsystem from "../service/system_instance";
-import Instance from "../entity/instance/instance";
-import logger from "../service/log";
-import path from "path";
 
-import { IInstanceDetail, IJson } from "../service/interfaces";
+import { arrayUnique, toNumber } from "mcsmanager-common";
 import ProcessInfoCommand from "../entity/commands/process_info";
-import FileManager from "../service/system_file";
 import { ProcessConfig } from "../entity/instance/process_config";
 import { TaskCenter } from "../service/async_task_service";
-import { createQuickInstallTask } from "../service/async_task_service/quick_install";
-import { QuickInstallTask } from "../service/async_task_service/quick_install";
-import { toNumber } from "mcsmanager-common";
-import { arrayUnique } from "mcsmanager-common";
+import {
+  createQuickInstallTask,
+  QuickInstallTask
+} from "../service/async_task_service/quick_install";
+import downloadManager from "../service/download_manager";
+import { IInstanceDetail, IJson } from "../service/interfaces";
+import { modService } from "../service/mod_service";
+import FileManager from "../service/system_file";
+import uploadManager from "../service/upload_manager";
 
 // Some instances operate router authentication middleware
 routerApp.use((event, ctx, data, next) => {
@@ -57,7 +61,10 @@ routerApp.on("instance/select", (ctx, data) => {
   let result = queryWrapper.select<Instance>((v) => {
     if (v.config.tag) allTags.push(...v.config.tag);
     if (InstanceSubsystem.isGlobalInstance(v)) return false;
-    if (condition.instanceName && !v.config.nickname.toLowerCase().includes(condition.instanceName.toLowerCase()))
+    if (
+      condition.instanceName &&
+      !v.config.nickname.toLowerCase().includes(condition.instanceName.toLowerCase())
+    )
       return false;
     if (condition.status && v.instanceStatus !== Number(condition.status)) return false;
 
@@ -68,7 +75,13 @@ routerApp.on("instance/select", (ctx, data) => {
     }
     return true;
   });
-  result = result.sort((a, b) => (a.config.nickname > b.config.nickname ? 1 : -1));
+  // sort first by status， then by nickname
+  result.sort((a, b) => {
+    if (a.status() !== b.status()) {
+      return b.status() - a.status();
+    }
+    return a.config.nickname >= b.config.nickname ? 1 : -1;
+  });
   // paging function
   const pageResult = queryWrapper.page<Instance>(result, page, pageSize);
   // filter unwanted data
@@ -76,17 +89,11 @@ routerApp.on("instance/select", (ctx, data) => {
     overview.push({
       instanceUuid: instance.instanceUuid,
       started: instance.startCount,
+      autoRestarted: instance.autoRestartCount,
       status: instance.status(),
       config: instance.config,
       info: instance.info
     });
-  });
-
-  overview.sort((a, b) => {
-    if (a.status !== b.status) {
-      return b.status - a.status;
-    }
-    return a.config.nickname >= b.config.nickname ? 1 : -1;
   });
 
   protocol.response(ctx, {
@@ -105,6 +112,7 @@ routerApp.on("instance/overview", (ctx) => {
     overview.push({
       instanceUuid: instance.instanceUuid,
       started: instance.startCount,
+      autoRestarted: instance.autoRestartCount,
       status: instance.status(),
       config: instance.config,
       info: instance.info
@@ -124,6 +132,7 @@ routerApp.on("instance/section", (ctx, data) => {
         overview.push({
           instanceUuid: instance.instanceUuid,
           started: instance.startCount,
+          autoRestarted: instance.autoRestartCount,
           status: instance.status(),
           config: instance.config,
           info: instance.info
@@ -149,6 +158,7 @@ routerApp.on("instance/detail", async (ctx, data) => {
     protocol.msg(ctx, "instance/detail", {
       instanceUuid: instance.instanceUuid,
       started: instance.startCount,
+      autoRestarted: instance.autoRestartCount,
       status: instance.status(),
       config: instance.config,
       info: instance.info,
@@ -167,7 +177,8 @@ routerApp.on("instance/new", (ctx, data) => {
     const newInstance = InstanceSubsystem.createInstance(config);
     protocol.msg(ctx, "instance/new", {
       instanceUuid: newInstance.instanceUuid,
-      config: newInstance.config
+      config: newInstance.config,
+      nickname: newInstance.config.nickname
     });
   } catch (err: any) {
     protocol.error(ctx, "instance/new", { instanceUuid: null, err: err.message });
@@ -218,18 +229,29 @@ routerApp.on("instance/forward", (ctx, data) => {
 // open the instance
 routerApp.on("instance/open", async (ctx, data) => {
   const disableResponse = data.disableResponse;
+  const instances = [];
   for (const instanceUuid of data.instanceUuids) {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
+    instances.push({
+      instanceUuid: instanceUuid,
+      nickname: instance?.config.nickname
+    });
     try {
-      await instance!.execPreset("start");
-      if (!disableResponse) protocol.msg(ctx, "instance/open", { instanceUuid });
+      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+      await instance.execPreset("start");
+      instance.autoRestartCount = 0;
+      if (!disableResponse) protocol.msg(ctx, "instance/open", { instanceUuid, instances });
     } catch (err: any) {
       if (!disableResponse) {
         logger.error(
           $t("TXT_CODE_Instance_router.openInstanceErr", { instanceUuid: instanceUuid }),
           err
         );
-        protocol.error(ctx, "instance/open", { instanceUuid: instanceUuid, err: err.message });
+        protocol.error(ctx, "instance/open", {
+          instanceUuid: instanceUuid,
+          nickname: instance?.config.nickname,
+          err: err.message
+        });
       }
     }
   }
@@ -238,16 +260,25 @@ routerApp.on("instance/open", async (ctx, data) => {
 // close the instance
 routerApp.on("instance/stop", async (ctx, data) => {
   const disableResponse = data.disableResponse;
+  const instances = [];
   for (const instanceUuid of data.instanceUuids) {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
+    instances.push({
+      instanceUuid: instanceUuid,
+      nickname: instance?.config.nickname
+    });
     try {
       if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
       await instance.execPreset("stop");
       //Note: Removing this reply will cause the front-end response to be slow, because the front-end will wait for the panel-side message to be forwarded
-      if (!disableResponse) protocol.msg(ctx, "instance/stop", { instanceUuid });
+      if (!disableResponse) protocol.msg(ctx, "instance/stop", { instanceUuid, instances });
     } catch (err: any) {
       if (!disableResponse)
-        protocol.error(ctx, "instance/stop", { instanceUuid: instanceUuid, err: err.message });
+        protocol.error(ctx, "instance/stop", {
+          instanceUuid: instanceUuid,
+          nickname: instance?.config.nickname,
+          err: err.message
+        });
     }
   }
 });
@@ -255,15 +286,24 @@ routerApp.on("instance/stop", async (ctx, data) => {
 // restart the instance
 routerApp.on("instance/restart", async (ctx, data) => {
   const disableResponse = data.disableResponse;
+  const instances = [];
   for (const instanceUuid of data.instanceUuids) {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
+    instances.push({
+      instanceUuid: instanceUuid,
+      nickname: instance?.config.nickname
+    });
     try {
       if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
       await instance.execPreset("restart");
-      if (!disableResponse) protocol.msg(ctx, "instance/restart", { instanceUuid });
+      if (!disableResponse) protocol.msg(ctx, "instance/restart", { instanceUuid, instances });
     } catch (err: any) {
       if (!disableResponse)
-        protocol.error(ctx, "instance/restart", { instanceUuid: instanceUuid, err: err.message });
+        protocol.error(ctx, "instance/restart", {
+          instanceUuid: instanceUuid,
+          nickname: instance?.config.nickname,
+          err: err.message
+        });
     }
   }
 });
@@ -271,15 +311,24 @@ routerApp.on("instance/restart", async (ctx, data) => {
 // terminate instance method
 routerApp.on("instance/kill", async (ctx, data) => {
   const disableResponse = data.disableResponse;
+  const instances = [];
   for (const instanceUuid of data.instanceUuids) {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
+    instances.push({
+      instanceUuid: instanceUuid,
+      nickname: instance?.config.nickname
+    });
     if (!instance) continue;
     try {
       await instance.execPreset("kill");
-      if (!disableResponse) protocol.msg(ctx, "instance/kill", { instanceUuid });
+      if (!disableResponse) protocol.msg(ctx, "instance/kill", { instanceUuid, instances });
     } catch (err: any) {
       if (!disableResponse)
-        protocol.error(ctx, "instance/kill", { instanceUuid: instanceUuid, err: err.message });
+        protocol.error(ctx, "instance/kill", {
+          instanceUuid: instanceUuid,
+          nickname: instance?.config.nickname,
+          err: err.message
+        });
     }
   }
 });
@@ -304,12 +353,19 @@ routerApp.on("instance/command", async (ctx, data) => {
 routerApp.on("instance/delete", (ctx, data) => {
   const instanceUuids = data.instanceUuids;
   const deleteFile = data.deleteFile;
+  const instances = [];
   for (const instanceUuid of instanceUuids) {
     try {
+      const instance = InstanceSubsystem.getInstance(instanceUuid);
+      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+      instances.push({
+        instanceUuid: instance.instanceUuid,
+        nickname: instance.config.nickname
+      });
       InstanceSubsystem.removeInstance(instanceUuid, deleteFile);
     } catch (err: any) {}
   }
-  protocol.msg(ctx, "instance/delete", instanceUuids);
+  protocol.msg(ctx, "instance/delete", { instanceUuids, instances });
 });
 
 // perform complex asynchronous tasks
@@ -337,6 +393,7 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
           $t("TXT_CODE_Instance_router.performTasksErr", {
             uuid: instance.instanceUuid,
             taskName: taskName,
+            nickname: instance.config.nickname,
             err: err
           })
         );
@@ -353,12 +410,16 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
           $t("TXT_CODE_Instance_router.performTasksErr", {
             uuid: instance.instanceUuid,
             taskName: taskName,
+            nickname: instance.config.nickname,
             err: err
           })
         );
       });
   }
+
   // Quick install Minecraft server task
+  // Why not use the ".execPreset("install", parameter)" that already exists in Instance?
+  // Because the instance has not yet been created at this stage.
   if (taskName === "quick_install") {
     const newInstanceName = String(parameter.newInstanceName);
     const targetLink = String(parameter.targetLink);
@@ -499,5 +560,94 @@ routerApp.on("instance/outputlog", async (ctx, data) => {
     });
   } catch (err: any) {
     protocol.responseError(ctx, err);
+  }
+});
+
+routerApp.on("instance/mods/list", async (ctx, data) => {
+  const instanceUuid = data.instanceUuid;
+  const page = Number(data.page) || 1;
+  const pageSize = Math.min(Number(data.pageSize) || 50, 50); // Max 50
+  const folder = data.folder ? String(data.folder) : undefined;
+  try {
+    const mods = await modService.listMods(instanceUuid, page, pageSize, folder);
+    const downloadTasks = [];
+    if (downloadManager.task) {
+      downloadTasks.push({
+        path: downloadManager.task.path,
+        total: downloadManager.task.total,
+        current: downloadManager.task.current,
+        status: downloadManager.task.status,
+        error: downloadManager.task.error,
+        type: "download"
+      });
+    }
+
+    const uploadTasks = [];
+    for (const [id, writer] of uploadManager.getUploads()) {
+      if (writer.cwd === instanceUuid || writer.path.includes(instanceUuid)) {
+        uploadTasks.push({
+          id,
+          path: writer.path,
+          total: writer.size,
+          current: writer.received.reduce(
+            (acc: number, r: { start: number; end: number }) => acc + (r.end - r.start),
+            0
+          ),
+          status: 0,
+          type: "upload"
+        });
+      }
+    }
+
+    protocol.response(ctx, {
+      ...mods,
+      downloadTasks: [...downloadTasks, ...uploadTasks],
+      downloadFileFromURLTask: downloadManager.downloadingCount
+    });
+  } catch (err: any) {
+    protocol.responseError(ctx, err);
+  }
+});
+
+routerApp.on("instance/mods/toggle", async (ctx, data) => {
+  const { instanceUuid, fileName } = data;
+  try {
+    await modService.toggleMod(instanceUuid, fileName);
+    protocol.response(ctx, true);
+  } catch (err: any) {
+    protocol.responseError(ctx, err);
+  }
+});
+
+routerApp.on("instance/mods/delete", async (ctx, data) => {
+  const { instanceUuid, fileName } = data;
+  try {
+    await modService.deleteMod(instanceUuid, fileName);
+    protocol.response(ctx, true);
+  } catch (err: any) {
+    protocol.responseError(ctx, err, { disablePrint: true });
+  }
+});
+
+routerApp.on("instance/mods/install", async (ctx, data) => {
+  const { instanceUuid, url, fileName, type, fallbackUrl } = data;
+  try {
+    // async
+    modService.installMod(instanceUuid, url, fileName, type, {
+      fallbackUrl
+    });
+    protocol.response(ctx, true);
+  } catch (err: any) {
+    protocol.responseError(ctx, err, { disablePrint: true });
+  }
+});
+
+routerApp.on("instance/mods/config_files", async (ctx, data) => {
+  const { instanceUuid, modId, type, fileName } = data;
+  try {
+    const files = await modService.getModConfig(instanceUuid, modId, type, fileName);
+    protocol.response(ctx, files);
+  } catch (err: any) {
+    protocol.responseError(ctx, err, { disablePrint: true });
   }
 });

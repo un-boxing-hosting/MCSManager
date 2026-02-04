@@ -29,6 +29,9 @@ export default class SystemConfig {
   // Decompression implementation form
   zipType: number = 1;
 
+  // TOTP drift tolerance, in steps (30 seconds)
+  totpDriftToleranceSteps: number = 0;
+
   // Login times IP limit
   loginCheckIp: boolean = true;
 
@@ -46,18 +49,28 @@ export default class SystemConfig {
   language = "en_us";
 
   // Quick installation address
-  presetPackAddr = "https://script.mcsmanager.com/templates.json";
+  presetPackAddr = "https://script.mcsmanager.com/market.json";
 
   // Redis address (Experimental Features)
   redisUrl = "";
 
+  // Whether to allow users to edit the start & update command of Docker instances
+  allowChangeCmd = false;
+
+  // -----
   // After it is enabled, you can connect to the redeem.mcsmanager.com platform
   // to sell instances based on redeem
   // (this feature may not be available in some countries)
   businessMode = false;
-
   businessId = "";
+  panelId = "";
+  registerCode = "";
+  // -----
 
-  // Whether to allow users to edit the start & update command of Docker instances
-  allowChangeCmd = false;
+  // Whether to enable SSL/TLS (HTTPS)
+  ssl = false;
+  // SSL certificate file path (.pem)
+  sslPemPath = "";
+  // SSL private key file path (.key)
+  sslKeyPath = "";
 }

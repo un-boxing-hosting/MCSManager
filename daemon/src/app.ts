@@ -1,22 +1,24 @@
-import http from "http";
 import fs from "fs-extra";
-import versionAdapter from "./service/version_adapter";
-import { checkDependencies } from "./service/dependencies";
-import { $t, i18next } from "./i18n";
-import { getVersion, initVersionManager } from "./service/version";
-import { globalConfiguration } from "./entity/config";
+import path from "path";
+import http from "http";
+import https from "https";
+import { removeTrail } from "mcsmanager-common";
 import { Server, Socket } from "socket.io";
-import { LOCAL_PRESET_LANG_PATH } from "./const";
-import logger from "./service/log";
-import { GOLANG_ZIP_PATH, PTY_PATH } from "./const";
-import * as router from "./service/router";
-import * as koa from "./service/http";
-import * as protocol from "./service/protocol";
-import InstanceSubsystem from "./service/system_instance";
+import { GOLANG_ZIP_PATH, LOCAL_PRESET_LANG_PATH, PTY_PATH } from "./const";
+import { globalConfiguration } from "./entity/config";
+import { $t, i18next } from "./i18n";
 import "./service/async_task_service";
 import "./service/async_task_service/quick_install";
+import { checkDependencies } from "./service/dependencies";
+import * as koa from "./service/http";
+import logger from "./service/log";
+import * as protocol from "./service/protocol";
+import * as router from "./service/router";
+import InstanceSubsystem from "./service/system_instance";
 import "./service/system_visual_data";
-import { removeTrail } from "mcsmanager-common";
+import uploadManager from "./service/upload_manager";
+import { getVersion, initVersionManager } from "./service/version";
+import versionAdapter from "./service/version_adapter";
 
 initVersionManager();
 const VERSION = getVersion();
@@ -67,7 +69,17 @@ koaApp.on("error", (error) => {
   // When Koa is attacked by a short connection flood, it is easy for error messages to swipe the screen, which may indirectly affect the operation of some applications
 });
 
-const httpServer = http.createServer(koaApp.callback());
+let httpServer: http.Server | https.Server;
+if (config.ssl) {
+  const options = {
+    cert: fs.readFileSync(path.join(config.sslPemPath)),
+    key: fs.readFileSync(path.join(config.sslKeyPath))
+  };
+  httpServer = https.createServer(options, koaApp.callback());
+} else {
+  httpServer = http.createServer(koaApp.callback());
+}
+
 httpServer.on("error", (err) => {
   logger.error($t("TXT_CODE_app.httpSetupError"));
   logger.error(err);
@@ -78,8 +90,8 @@ httpServer.listen(config.port, config.ip);
 // Initialize Websocket service to HTTP service
 const io = new Server(httpServer, {
   serveClient: false,
-  pingInterval: 5000,
-  pingTimeout: 5000,
+  pingInterval: 1000 * 20,
+  pingTimeout: 1000 * 10,
   cookie: false,
   path: removeTrail(config.prefix, "/") + "/socket.io",
   cors: {
@@ -134,7 +146,9 @@ process.on("unhandledRejection", (reason, p) => {
 logger.info("----------------------------");
 logger.info($t("TXT_CODE_app.started"));
 logger.info($t("TXT_CODE_app.doc"));
-logger.info($t("TXT_CODE_app.addr", { port: config.port }));
+let appHost = $t("TXT_CODE_app.host", { port: config.port })
+if (config.ssl) appHost = appHost.replace("http", "https");
+logger.info(appHost);
 logger.info($t("TXT_CODE_app.configPathTip", { path: "" }));
 logger.info($t("TXT_CODE_app.password", { key: config.key }));
 logger.info($t("TXT_CODE_app.passwordTip"));
@@ -142,27 +156,33 @@ logger.info($t("TXT_CODE_app.exitTip"));
 logger.info("----------------------------");
 console.log("");
 
-async function processExit() {
+let isExiting = false;
+async function listenExitSig(signal: string, isForce = true) {
+  if (isExiting) {
+    logger.warn($t("TXT_CODE_6f862823"));
+    return;
+  }
   try {
-    console.log("");
-    logger.warn("Program received EXIT command.");
-    await InstanceSubsystem.exit();
-    logger.info("Exit.");
-  } catch (err) {
-    logger.error("ERROR:", err);
-  } finally {
+    logger.warn($t("TXT_CODE_4ffdc91d", { signal }));
+    isExiting = true;
+    await InstanceSubsystem.exit(isForce);
+    await uploadManager.exit();
+    logger.info($t("TXT_CODE_dff680b7"));
     process.exit(0);
+  } catch (err) {
+    logger.error(err);
+    process.exit(-1);
   }
 }
 
+// Listen for close process signals
 ["SIGTERM", "SIGINT", "SIGQUIT"].forEach(function (sig) {
-  process.on(sig, () => {
-    logger.warn(`${sig} close process signal detected.`);
-    processExit();
+  process.on(sig, async () => {
+    await listenExitSig(sig);
   });
 });
 
 process.stdin.on("data", (v) => {
   const command = v.toString().replace("\n", "").replace("\r", "").trim().toLowerCase();
-  if (command === "exit") processExit();
+  if (command === "exit") listenExitSig("exit");
 });

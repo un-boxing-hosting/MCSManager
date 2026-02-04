@@ -1,8 +1,17 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import type { LayoutCard } from "@/types";
-import { arrayFilter } from "../../tools/array";
+import InnerCard from "@/components/InnerCard.vue";
+import ResponsiveLayoutGroup from "@/components/ResponsiveLayoutGroup.vue";
+import { useAppRouters } from "@/hooks/useAppRouters";
+import {
+  TYPE_MINECRAFT_JAVA,
+  TYPE_STEAM_SERVER_UNIVERSAL,
+  useInstanceInfo
+} from "@/hooks/useInstance";
+import { useServerConfig } from "@/hooks/useServerConfig";
 import { t } from "@/lang/i18n";
+import { modListApi } from "@/services/apis/modManager";
+import { useAppStateStore } from "@/stores/useAppStateStore";
+import type { LayoutCard } from "@/types";
 import {
   AppstoreAddOutlined,
   ArrowRightOutlined,
@@ -12,32 +21,27 @@ import {
   DashboardOutlined,
   FieldTimeOutlined,
   FolderOpenOutlined,
+  UsbOutlined,
   UsergroupDeleteOutlined
 } from "@ant-design/icons-vue";
-import InnerCard from "@/components/InnerCard.vue";
-import { LayoutCardHeight } from "../../config/originLayoutConfig";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { useAppRouters } from "@/hooks/useAppRouters";
+
+import { computed, ref, watch } from "vue";
+import type { RouteLocationPathRaw } from "vue-router";
 import { useLayoutCardTools } from "../../hooks/useCardTools";
-import {
-  TYPE_MINECRAFT_JAVA,
-  TYPE_STEAM_SERVER_UNIVERSAL,
-  useInstanceInfo
-} from "@/hooks/useInstance";
-import TermConfig from "./dialogs/TermConfig.vue";
+import { arrayFilter } from "../../tools/array";
 import EventConfig from "./dialogs/EventConfig.vue";
-import PingConfig from "./dialogs/PingConfig.vue";
-import RconSettings from "./dialogs/RconSettings.vue";
 import InstanceDetail from "./dialogs/InstanceDetail.vue";
 import InstanceFundamentalDetail from "./dialogs/InstanceFundamentalDetail.vue";
-import type { RouteLocationPathRaw } from "vue-router";
-import { TYPE_UNIVERSAL, TYPE_WEB_SHELL } from "../../hooks/useInstance";
+import JavaManager from "./dialogs/JavaManager.vue";
 import McPingSettings from "./dialogs/McPingSettings.vue";
-import ResponsiveLayoutGroup from "@/components/ResponsiveLayoutGroup.vue";
+import PingConfig from "./dialogs/PingConfig.vue";
+import RconSettings from "./dialogs/RconSettings.vue";
+import TermConfig from "./dialogs/TermConfig.vue";
 
 const terminalConfigDialog = ref<InstanceType<typeof TermConfig>>();
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
 const mcSettingsDialog = ref<InstanceType<typeof McPingSettings>>();
+const javaManagerDialog = ref<InstanceType<typeof JavaManager>>();
 const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
 const pingConfigDialog = ref<InstanceType<typeof PingConfig>>();
 const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
@@ -61,6 +65,37 @@ const { instanceInfo, execute, isGlobalTerminal } = useInstanceInfo({
   daemonId,
   autoRefresh: true
 });
+
+const { serverConfigFiles, refresh: refreshServerConfig } = useServerConfig();
+
+const folders = ref<string[]>([]);
+const foldersLoaded = ref(false);
+
+const loadFolders = async () => {
+  if (!instanceId || !daemonId) return;
+  try {
+    const { execute } = modListApi();
+    const res = await execute({
+      params: {
+        uuid: instanceId,
+        daemonId: daemonId
+      }
+    });
+    folders.value = res.value?.folders || [];
+  } catch (err) {
+    console.error("Failed to load folders:", err);
+  } finally {
+    foldersLoaded.value = true;
+  }
+};
+
+watch(
+  () => [instanceId, daemonId],
+  () => {
+    loadFolders();
+  },
+  { immediate: true }
+);
 
 const toPage = (params: RouteLocationPathRaw) => {
   if (!params.query) params.query = {};
@@ -91,7 +126,8 @@ const btns = computed(() => {
       condition: () => {
         return (
           !isGlobalTerminal.value &&
-          ![TYPE_UNIVERSAL, TYPE_WEB_SHELL].includes(instanceInfo.value?.config.type || "")
+          !!serverConfigFiles.value &&
+          serverConfigFiles.value?.length > 0
         );
       },
       click: (): void => {
@@ -112,10 +148,28 @@ const btns = computed(() => {
       condition: () => state.settings.canFileManager || isAdmin.value
     },
     {
-      title: t("TXT_CODE_40241d8e"),
-      icon: UsergroupDeleteOutlined,
+      title: t("TXT_CODE_MOD_MANAGER"),
+      icon: UsbOutlined,
       click: () => {
-        mcSettingsDialog.value?.openDialog();
+        toPage({ path: "/instances/terminal/mods" });
+      },
+      condition: () => {
+        const type = instanceInfo.value?.config.type || "";
+        // Narrow it down to Minecraft server types only (Java or Bedrock)
+        const isMC = type.startsWith("minecraft/java") || type.startsWith("minecraft/bedrock");
+        if (!isMC) return false;
+        const hasPermission = state.settings.canFileManager || isAdmin.value;
+        if (!hasPermission) return false;
+        if (!foldersLoaded.value) return false;
+        return folders.value && folders.value.length > 0;
+      }
+    },
+
+    {
+      title: t("TXT_CODE_3fee13ed"),
+      icon: BuildOutlined,
+      click: () => {
+        javaManagerDialog.value?.openDialog();
       },
       condition: () => instanceInfo.value?.config.type.includes(TYPE_MINECRAFT_JAVA) ?? false
     },
@@ -128,13 +182,7 @@ const btns = computed(() => {
       condition: () =>
         instanceInfo.value?.config.type.includes(TYPE_STEAM_SERVER_UNIVERSAL) ?? false
     },
-    {
-      title: t("TXT_CODE_d23631cb"),
-      icon: CodeOutlined,
-      click: () => {
-        terminalConfigDialog.value?.openDialog();
-      }
-    },
+
     {
       title: t("TXT_CODE_b7d026f8"),
       icon: FieldTimeOutlined,
@@ -157,12 +205,27 @@ const btns = computed(() => {
       }
     },
     {
+      title: t("TXT_CODE_d23631cb"),
+      icon: CodeOutlined,
+      click: () => {
+        terminalConfigDialog.value?.openDialog();
+      }
+    },
+    {
       title: t("TXT_CODE_4f34fc28"),
       icon: AppstoreAddOutlined,
       condition: () => isAdmin.value,
       click: () => {
         instanceDetailsDialog.value?.openDialog();
       }
+    },
+    {
+      title: t("TXT_CODE_40241d8e"),
+      icon: UsergroupDeleteOutlined,
+      click: () => {
+        mcSettingsDialog.value?.openDialog();
+      },
+      condition: () => instanceInfo.value?.config.type.includes(TYPE_MINECRAFT_JAVA) ?? false
     },
     {
       title: t("TXT_CODE_4f34fc28"),
@@ -177,6 +240,12 @@ const btns = computed(() => {
     }
   ]);
 });
+
+watch(instanceInfo, (cfg, oldCfg) => {
+  if (cfg?.config?.type && instanceId && daemonId && cfg.config.type !== oldCfg?.config?.type) {
+    refreshServerConfig(cfg.config.type, instanceId, daemonId);
+  }
+});
 </script>
 
 <template>
@@ -185,11 +254,7 @@ const btns = computed(() => {
     <template #body>
       <ResponsiveLayoutGroup class="function-btns-container" :items="btns">
         <template #default="{ item }">
-          <InnerCard
-            :style="{ height: LayoutCardHeight.MINI }"
-            :icon="item.icon"
-            @click="item.click"
-          >
+          <InnerCard :style="{ height: '90px' }" :icon="item.icon" @click="item.click">
             <template #title>
               {{ item.title }}
             </template>
@@ -262,6 +327,14 @@ const btns = computed(() => {
     :daemon-id="daemonId"
     @update="refreshInstanceInfo"
   />
+
+  <JavaManager
+    ref="javaManagerDialog"
+    :instance-info="instanceInfo"
+    :daemon-id="daemonId"
+    :instance-id="instanceId"
+    @update="refreshInstanceInfo"
+  />
 </template>
 
 <style lang="scss" scoped>
@@ -271,5 +344,13 @@ const btns = computed(() => {
   bottom: 0;
   left: 0;
   right: 0;
+}
+
+@media (max-width: 1000px) {
+  .function-btns-container {
+    position: relative;
+    height: auto;
+    min-height: 100%;
+  }
 }
 </style>

@@ -1,31 +1,51 @@
-import os from "os";
-import { $t } from "./app/i18n";
-import { initVersionManager, getVersion } from "./app/version";
-import RedisStorage from "./app/common/storage/redis_storage";
-import Storage from "./app/common/storage/sys_storage";
-import { initSystemConfig, systemConfig } from "./app/setting";
-import SystemUser from "./app/service/user_service";
-import SystemRemoteService from "./app/service/remote_service";
+import fs from "fs-extra";
+import http from "http";
+import https from "https";
 import Koa from "koa";
-import { v4 } from "uuid";
-import path from "path";
-import koaBody, { HttpMethodEnum } from "koa-body-patch";
+import koaBody, { HttpMethodEnum } from "koa-body";
 import session from "koa-session";
 import koaStatic from "koa-static";
-import http from "http";
-import open from "open";
-import { fileLogger, logger } from "./app/service/log";
-import { middleware as protocolMiddleware } from "./app/middleware/protocol";
-import { mountRouters } from "./app/index";
-import versionAdapter from "./app/service/version_adapter";
 import { removeTrail } from "mcsmanager-common";
+import open from "open";
+import os from "os";
+import path from "path";
+import { v4 } from "uuid";
+import RedisStorage from "./app/common/storage/redis_storage";
+import Storage from "./app/common/storage/sys_storage";
+import { $t } from "./app/i18n";
+import { mountRouters } from "./app/index";
+import { preCheckMiddleware } from "./app/middleware/precheck";
+import { middleware as protocolMiddleware } from "./app/middleware/protocol";
+import { logger } from "./app/service/log";
+import SystemRemoteService from "./app/service/remote_service";
+import SystemUser from "./app/service/user_service";
+import versionAdapter from "./app/service/version_adapter";
+import { initSystemConfig, systemConfig } from "./app/setting";
+import { checkBusinessMode, getVersion, initVersionManager } from "./app/version";
 
 function hasParams(name: string) {
   return process.argv.includes(name);
 }
 
-function setupHttp(koaApp: Koa, port: number, host?: string) {
-  const httpServer = http.createServer(koaApp.callback());
+function setupHttp(
+  koaApp: Koa,
+  ssl: boolean,
+  sslPemPath: string,
+  sslKeyPath: string,
+  port: number,
+  host?: string
+) {
+  let httpServer: http.Server | https.Server;
+
+  if (ssl) {
+    const options = {
+      cert: fs.readFileSync(path.join(sslPemPath)),
+      key: fs.readFileSync(path.join(sslKeyPath))
+    };
+    httpServer = https.createServer(options, koaApp.callback());
+  } else {
+    httpServer = http.createServer(koaApp.callback());
+  }
 
   httpServer.on("error", (err) => {
     logger.error($t("TXT_CODE_app.httpSetupError"));
@@ -37,13 +57,15 @@ function setupHttp(koaApp: Koa, port: number, host?: string) {
   logger.info("==================================");
   logger.info($t("TXT_CODE_app.panelStarted"));
   logger.info($t("TXT_CODE_app.reference"));
-  logger.info($t("TXT_CODE_app.host", { port }));
+  let appHost = $t("TXT_CODE_app.host", { port });
+  if (ssl) appHost = appHost.replace("http", "https");
+  logger.info(appHost);
   logger.info($t("TXT_CODE_app.portTip", { port }));
   logger.info($t("TXT_CODE_app.exitTip", { port }));
   logger.info("==================================");
 
   if (os.platform() == "win32" && hasParams("--open")) {
-    open(`http://localhost:${port}/`);
+    open(ssl ? `https://localhost:${port}/` : `http://localhost:${port}/`);
   }
 }
 
@@ -96,6 +118,8 @@ _  /  / / / /___  ____/ /_  /  / / / /_/ /_  / / / /_/ /_  /_/ //  __/  /
   // Detect whether the configuration file is from an older version and update it if so.
   versionAdapter.detectConfig();
 
+  checkBusinessMode();
+
   // Initialize services
   await SystemUser.initialize();
   await SystemRemoteService.initialize();
@@ -111,6 +135,7 @@ _  /  / / / /___  ____/ /_  /  / / / /_/ /_  / / / /_/ /_  /_/ //  __/  /
     // When Koa is attacked by a short connection flood, it is easy for error messages to swipe the screen, which may indirectly affect the operation of some applications
   });
 
+  app.use(preCheckMiddleware);
   app.use(
     koaBody({
       multipart: true,
@@ -121,8 +146,7 @@ _  /  / / / /___  ____/ /_  /  / / / /_/ /_  / / / /_/ /_  /_/ //  __/  /
         HttpMethodEnum.DELETE
       ],
       formidable: {
-        maxFieldsSize: Number.MAX_VALUE,
-        maxFileSize: Number.MAX_VALUE,
+        maxFileSize: 1024 * 1024 * 500,
         maxFiles: 1
       },
       jsonLimit: "10mb",
@@ -154,10 +178,6 @@ _  /  / / / /___  ____/ /_  /  / / / /_/ /_  / / / /_/ /_  /_/ //  __/  /
     for (const iterator of ignoreUrls) {
       if (ctx.URL.pathname.includes(iterator)) return await next();
     }
-    fileLogger.info(`[HTTP] ${ctx.method}: ${ctx.URL.href}`);
-    fileLogger.info(
-      `[HTTP] IP: ${ctx.ip} USER: ${ctx.session?.userName} UUID: ${ctx.session?.uuid}`
-    );
     await next();
   });
 
@@ -194,7 +214,15 @@ _  /  / / / /___  ____/ /_  /  / / / /_/ /_  / / / /_/ /_  /_/ //  __/  /
     logger.error(`ERROR (unhandledRejection):`, reason, p);
   });
 
-  if (systemConfig) setupHttp(app, systemConfig.httpPort, systemConfig.httpIp);
+  if (systemConfig)
+    setupHttp(
+      app,
+      systemConfig.ssl,
+      systemConfig.sslPemPath,
+      systemConfig.sslKeyPath,
+      systemConfig.httpPort,
+      systemConfig.httpIp
+    );
 }
 
 main().catch((err) => {

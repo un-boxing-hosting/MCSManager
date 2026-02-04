@@ -20,20 +20,38 @@ export enum NEW_CARD_TYPE {
   OTHER = "OTHER"
 }
 
+export interface InstanceRuntimeInfo {
+  mcPingOnline: boolean;
+  currentPlayers: number;
+  maxPlayers: number;
+  version: string;
+  fileLock: number;
+  playersChart: { value: string }[];
+  openFrpStatus: boolean;
+  latency: number;
+  cpuUsage?: number;
+  memoryUsagePercent?: number;
+  rxBytes?: number;
+  txBytes?: number;
+  readBytes?: number;
+  writeBytes?: number;
+  memoryUsage?: number;
+  memoryLimit?: number;
+  storageUsage?: number;
+  storageLimit?: number;
+  allocatedPorts?: {
+    host: number;
+    container: number;
+    protocol: string;
+  }[];
+}
+
 export interface InstanceDetail {
   instanceUuid: string;
   started: number;
+  autoRestarted: number;
   status: INSTANCE_STATUS_CODE;
-  info: {
-    mcPingOnline: boolean;
-    currentPlayers: number;
-    maxPlayers: number;
-    version: string;
-    fileLock: number;
-    playersChart: Array<{ value: string }>;
-    openFrpStatus: boolean;
-    latency: number;
-  };
+  info: InstanceRuntimeInfo;
   config: IGlobalInstanceConfig;
   watcher?: number;
 }
@@ -57,6 +75,7 @@ export interface Settings {
   maxCompress: number;
   maxDownload: number;
   zipType: number;
+  totpDriftToleranceSteps: number;
   loginCheckIp: boolean;
   loginInfo: string;
   canFileManager: boolean;
@@ -67,6 +86,8 @@ export interface Settings {
   businessMode: boolean;
   businessId: string;
   allowChangeCmd: boolean;
+  registerCode: string;
+  panelId: string;
 }
 
 export interface ImageInfo {
@@ -173,23 +194,6 @@ export interface ContainerInfo {
   ];
 }
 
-export interface NewInstanceForm {
-  nickname: string;
-  processType: string;
-  startCommand: string;
-  stopCommand: string;
-  cwd: string;
-  ie: string;
-  oe: string;
-  createDatetime: string;
-  lastDatetime: string;
-  type: string;
-  tag: never[];
-  maxSpace: null;
-  endTime: string;
-  docker: IGlobalInstanceDockerConfig;
-}
-
 export type QuickStartTemplate = IQuickStartTemplate;
 export type QuickStartPackages = IQuickStartPackages;
 
@@ -198,33 +202,36 @@ export interface LabelValueOption {
   value: string;
 }
 
-export interface MountComponent {
+export interface MountComponent<T = any> {
   destroyComponent(delay?: number): void;
-  emitResult(data?: any): void;
+  emitResult(data?: T): void;
 }
 
 export interface Schedule {
   instanceUuid: string;
   name: string;
-  count: number;
+  count: number | string;
   time: string;
-  action: string;
-  payload: string;
+  actions: ScheduleAction[];
   type: number;
+}
+
+export interface ScheduleAction {
+  type: string;
+  payload: string;
 }
 
 export interface NewScheduleTask {
   name: string;
-  count: number;
+  count: number | string;
   time: string;
-  action: string;
   type: ScheduleCreateType;
 }
 
 export interface ScheduleTaskForm extends NewScheduleTask {
-  payload: string;
   weekend: number[];
   cycle: string[];
+  actions: ScheduleAction[];
   objTime: Dayjs;
 }
 
@@ -238,5 +245,6 @@ export interface PanelStatus {
     businessMode: boolean;
     businessId: string;
     allowChangeCmd: boolean;
+    panelId: string;
   };
 }

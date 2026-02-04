@@ -1,3 +1,4 @@
+import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { remoteNodeList } from "@/services/apis";
 import { arrayFilter } from "@/tools/array";
@@ -5,29 +6,29 @@ import {
   AppstoreAddOutlined,
   AppstoreTwoTone,
   CalculatorTwoTone,
+  CloudUploadOutlined,
+  CodeOutlined,
   DatabaseTwoTone,
+  FileExcelOutlined,
+  FileZipOutlined,
+  FolderOpenOutlined,
+  HomeOutlined,
   IdcardTwoTone,
   NodeIndexOutlined,
   ShoppingCartOutlined,
-  CloudUploadOutlined,
-  FileZipOutlined,
-  FileExcelOutlined,
-  TransactionOutlined,
   SmileTwoTone,
-  CodeOutlined,
-  FolderOpenOutlined,
-  HomeOutlined
+  TransactionOutlined
 } from "@ant-design/icons-vue";
-import { computed, onMounted, reactive, ref, type FunctionalComponent } from "vue";
-import { router } from "@/config/router";
+import { computed, reactive, ref, type FunctionalComponent } from "vue";
 
 export enum QUICKSTART_ACTION_TYPE {
-  Minecraft = "Minecraft",
-  Bedrock = "Bedrock",
-  Terraria = "Terraria",
-  SteamGameServer = "SteamGameServer",
-  Docker = "Docker",
-  AnyApp = "AnyApp"
+  Minecraft = "minecraft",
+  Bedrock = "bedrock",
+  Hytale = "hytale",
+  Terraria = "terraria",
+  SteamGameServer = "steam",
+  Docker = "docker",
+  AnyApp = "universal"
 }
 
 export enum QUICKSTART_METHOD {
@@ -60,6 +61,11 @@ export function useQuickStartFlow() {
     {
       title: t("TXT_CODE_c8261c85"),
       key: QUICKSTART_ACTION_TYPE.Bedrock,
+      icon: AppstoreAddOutlined
+    },
+    {
+      title: t("TXT_CODE_2025658e"),
+      key: QUICKSTART_ACTION_TYPE.Hytale,
       icon: AppstoreAddOutlined
     },
     {

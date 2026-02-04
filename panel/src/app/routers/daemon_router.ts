@@ -1,9 +1,10 @@
 import Router from "@koa/router";
+import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
-import RemoteServiceSubsystem from "../service/remote_service";
+import { operationLogger } from "../service/operation_logger";
 import RemoteRequest from "../service/remote_command";
-import { ROLE } from "../entity/user";
+import RemoteServiceSubsystem from "../service/remote_service";
 
 const router = new Router({ prefix: "/service" });
 
@@ -34,8 +35,8 @@ router.get(
   validator({ query: { daemonId: String, page: Number, page_size: Number } }),
   async (ctx) => {
     const daemonId = String(ctx.query.daemonId);
-    const page = Number(ctx.query.page);
-    const pageSize = Number(ctx.query.page_size);
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(50, Math.max(1, Number(ctx.query.page_size) || 10));
     const instanceName = ctx.query.instance_name;
     const status = ctx.query.status;
     const tag = String(ctx.query.tag);
@@ -118,6 +119,13 @@ router.post(
       prefix: parameter.prefix ?? "",
       remarks: parameter.remarks ?? ""
     });
+
+    operationLogger.log("daemon_create", {
+      operator_ip: ctx.ip,
+      operator_name: ctx.session?.["userName"],
+      daemon_id: instance.uuid
+    });
+
     ctx.body = instance.uuid;
   }
 );
@@ -130,15 +138,34 @@ router.put(
   validator({ query: { uuid: String } }),
   async (ctx) => {
     const uuid = String(ctx.request.query.uuid);
-    const parameter = ctx.request.body;
+    const parameter = ctx.request.body || {};
+    const daemonSetting = parameter?.setting || {};
+    const daemon = RemoteServiceSubsystem.getInstance(uuid);
+
+    if (daemonSetting && daemon?.available) {
+      await new RemoteRequest(daemon).request("info/setting", {
+        ...daemonSetting,
+        port: parameter.daemonPort
+      });
+    }
+
     if (!RemoteServiceSubsystem.services.has(uuid)) throw new Error("Instance does not exist");
+
     await RemoteServiceSubsystem.edit(uuid, {
       port: parameter.port,
       ip: parameter.ip,
       prefix: parameter.prefix ?? "",
       apiKey: parameter.apiKey,
-      remarks: parameter.remarks
+      remarks: parameter.remarks,
+      remoteMappings: parameter.remoteMappings ?? [],
     });
+
+    operationLogger.log("daemon_config_change", {
+      operator_ip: ctx.ip,
+      operator_name: ctx.session?.["userName"],
+      daemon_id: uuid
+    });
+
     ctx.body = true;
   }
 );
@@ -153,6 +180,11 @@ router.delete(
     const uuid = String(ctx.request.query.uuid);
     if (!RemoteServiceSubsystem.services.has(uuid)) throw new Error("Instance does not exist");
     await RemoteServiceSubsystem.deleteRemoteService(uuid);
+    operationLogger.log("daemon_remove", {
+      operator_ip: ctx.ip,
+      operator_name: ctx.session?.["userName"],
+      daemon_id: uuid
+    });
     ctx.body = true;
   }
 );

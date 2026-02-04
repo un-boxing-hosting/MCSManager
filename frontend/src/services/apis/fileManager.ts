@@ -1,4 +1,5 @@
 import { useDefineApi } from "@/stores/useDefineApi";
+import type { RemoteMappingEntry } from "@/tools/protocol";
 
 export const fileList = useDefineApi<
   {
@@ -39,6 +40,14 @@ export const getFileStatus = useDefineApi<
   {
     instanceFileTask: number;
     globalFileTask: number;
+    downloadFileFromURLTask: number;
+    downloadTasks?: {
+      path: string;
+      total: number;
+      current: number;
+      status: number;
+      error?: string;
+    }[];
     platform: string;
     isGlobalInstance: boolean;
     disks: string[];
@@ -148,6 +157,25 @@ export const compressFile = useDefineApi<
   timeout: Number.MAX_SAFE_INTEGER
 });
 
+export const downloadFromUrl = useDefineApi<
+  {
+    params: {
+      daemonId: string;
+      uuid: string;
+    };
+    data: {
+      url: string;
+      file_name: string;
+    };
+  },
+  {
+    error?: string;
+  }
+>({
+  url: "/api/files/download_from_url",
+  method: "POST"
+});
+
 export const uploadAddress = useDefineApi<
   {
     params: {
@@ -159,6 +187,7 @@ export const uploadAddress = useDefineApi<
   {
     password: string;
     addr: string;
+    remoteMappings: RemoteMappingEntry[];
   }
 >({
   url: "/api/files/upload",
@@ -167,15 +196,37 @@ export const uploadAddress = useDefineApi<
 
 export const uploadFile = useDefineApi<
   {
-    data: FormData,
+    params:
+      | {
+          overwrite: boolean;
+          filename: string;
+          size: number;
+          sum: string;
+          unzip?: boolean;
+          code?: string;
+        }
+      | { stop: boolean };
+  },
+  {
+    id?: string;
+    received?: { start: number; end: number }[];
+  }
+>({
+  method: "POST"
+});
+
+export const uploadFilePiece = useDefineApi<
+  {
+    data: FormData;
     params: {
-      overwrite: boolean;
+      offset: number;
     };
   },
   any
 >({
   method: "POST",
-  headers: { "Content-Type": "multipart/form-data" }
+  headers: { "Content-Type": "multipart/form-data" },
+  timeout: Number.MAX_SAFE_INTEGER
 });
 
 export const downloadAddress = useDefineApi<
@@ -189,6 +240,7 @@ export const downloadAddress = useDefineApi<
   {
     password: string;
     addr: string;
+    remoteMappings: RemoteMappingEntry[];
   }
 >({
   url: "/api/files/download",
