@@ -1339,6 +1339,35 @@ defineExpose({
                     </a-input-group>
                   </a-form-item>
                 </a-col>
+
+                <a-col :xs="24" :lg="8" :offset="0">
+                  <a-form-item>
+                    <a-typography-title :level="5">
+                      {{ t("TXT_CODE_docker_force_pull") }}
+                    </a-typography-title>
+                    <a-typography-paragraph>
+                      <a-tooltip :title="t('TXT_CODE_docker_force_pull_tip')" placement="top">
+                        <a-typography-text
+                          type="secondary"
+                          :class="[!isPhone && 'two-line-height', 'typography-text-ellipsis']"
+                        >
+                          {{ t("TXT_CODE_docker_force_pull_tip") }}
+                        </a-typography-text>
+                      </a-tooltip>
+                    </a-typography-paragraph>
+                    <div class="ml-4">
+                      <a-switch
+                        v-model:checked="formData.instance.config.docker.forcePullImage"
+                        :disabled="isGlobalTerminal"
+                        :checked-value="true"
+                        :un-checked-value="false"
+                      >
+                        <template #checkedChildren><check-outlined /></template>
+                        <template #unCheckedChildren><close-outlined /></template>
+                      </a-switch>
+                    </div>
+                  </a-form-item>
+                </a-col>
               </template>
             </a-row>
           </a-tab-pane>

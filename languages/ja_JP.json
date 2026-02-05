@@ -2628,6 +2628,8 @@
   "TXT_CODE_db07cf9e": "どういうわけか世界の国境の外に出るなら、あなたをテレポートしてスポーンします",
   "TXT_CODE_db14fb46": "正常に追加されました",
   "TXT_CODE_db37b7f9": "イメージのダウンロード エラー。イメージ名が正しいことを確認するか、ノード管理コンソールで docker pull を使用して必要なイメージを手動でプルしてください。",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "パネルログイン数",
   "TXT_CODE_db815f4a": "テキスト フィルタリング ルール プロファイル (正しく機能しない可能性があります)",
   "TXT_CODE_db9375a5": "外部ウェブサイトの表示に使用可能",

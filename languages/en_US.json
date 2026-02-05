@@ -2645,6 +2645,8 @@
   "TXT_CODE_docker_pull_generic_error_with_detail": "Docker pull failed: {{errorMsg}} ({{errorDetail}})",
   "TXT_CODE_docker_pull_generic_error_fallback": "Image download error, please make sure the image name is correct, or manually pull the required image using docker pull via the node management terminal, error:\n{{errMsg}}",
   "TXT_CODE_docker_pull_stream_error": "Docker pull stream error: {{error}}",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db815f4a": "Text filtering rules configuration file (may not work as intended)",
   "TXT_CODE_db9375a5": "Can be used to display external websites",
   "TXT_CODE_dba9bf61": "Compression failed!",

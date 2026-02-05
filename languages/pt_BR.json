@@ -2628,6 +2628,8 @@
   "TXT_CODE_db07cf9e": "Teleports você para desovar se de alguma forma sair da fronteira mundial",
   "TXT_CODE_db14fb46": "Adicionado",
   "TXT_CODE_db37b7f9": "Erro no download da imagem, por favor, certifique-se de que o nome da imagem está correto, ou puxe manualmente a imagem necessária usando docker pull via terminal de gerenciamento de nó, erro:",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "Contagem de Login",
   "TXT_CODE_db815f4a": "Arquivo de configuração das regras de filtragem de texto (pode não funcionar conforme o esperado)",
   "TXT_CODE_db9375a5": "Pode ser usado para exibir sites externos",

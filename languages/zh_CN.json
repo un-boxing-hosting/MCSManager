@@ -2628,6 +2628,8 @@
   "TXT_CODE_db07cf9e": "若玩家越过世界边界，将被传送回出生点。",
   "TXT_CODE_db14fb46": "添加成功",
   "TXT_CODE_db37b7f9": "镜像下载错误，请确保此镜像名正确，或者在节点管理的终端处手动通过 docker pull 拉取你需要的镜像，错误信息：",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "面板登录次数",
   "TXT_CODE_db815f4a": "文本过滤规则配置文件（可能工作不正常）",
   "TXT_CODE_db9375a5": "可以用来显示外部网站",

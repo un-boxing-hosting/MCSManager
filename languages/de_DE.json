@@ -2339,6 +2339,8 @@
   "TXT_CODE_db07cf9e": "Teleportiert dich zum Spawn, wenn du irgendwie die Weltgrenze verlässt",
   "TXT_CODE_db14fb46": "erfolgreich hinzugefügt",
   "TXT_CODE_db37b7f9": "Fehler beim Herunterladen des Bildes. Stellen Sie sicher, dass der Bildname korrekt ist, oder ziehen Sie das benötigte Bild manuell über Docker Pull an der Knotenverwaltungskonsole.",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "Anzahl der Panel-Logins",
   "TXT_CODE_db815f4a": "Textfilterregelprofil (funktioniert möglicherweise nicht ordnungsgemäß)",
   "TXT_CODE_db9375a5": "Kann zur Anzeige externer Websites verwendet werden",

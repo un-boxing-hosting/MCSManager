@@ -2628,6 +2628,8 @@
   "TXT_CODE_db07cf9e": "Vous téléporte pour engendrer si vous sortez d'une manière ou d'une autre de la frontière mondiale",
   "TXT_CODE_db14fb46": "ajouté avec succès",
   "TXT_CODE_db37b7f9": "Erreur de téléchargement d'image. Veuillez vous assurer que le nom de l'image est correct ou extrayez manuellement l'image dont vous avez besoin via Docker Pull sur la console de gestion des nœuds.",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "Nombre de connexions au panneau",
   "TXT_CODE_db815f4a": "Profil de règle de filtrage de texte (peut ne pas fonctionner correctement)",
   "TXT_CODE_db9375a5": "Peut être utilisé pour afficher des sites Web externes",

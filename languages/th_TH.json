@@ -2628,6 +2628,8 @@
   "TXT_CODE_db07cf9e": "เทเลพอร์ตคุณไปยังจุดเกิดหากคุณหลุดออกจากขอบเขตโลกได้",
   "TXT_CODE_db14fb46": "เพิ่มแล้ว",
   "TXT_CODE_db37b7f9": "เกิดข้อผิดพลาดในการดาวน์โหลดอิมเมจ โปรดตรวจสอบว่าชื่ออิมเมจถูกต้อง หรือดึงอิมเมจที่ต้องการด้วยตนเองโดยใช้ docker pull ผ่านเทอร์มินัลการจัดการโหนด ข้อผิดพลาด:",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "จำนวนการเข้าสู่ระบบ",
   "TXT_CODE_db815f4a": "ไฟล์การตั้งค่ากฎการกรองข้อความ (อาจไม่ทำงานตามที่ตั้งใจ)",
   "TXT_CODE_db9375a5": "สามารถใช้แสดงเว็บไซต์ภายนอกได้",

@@ -2628,6 +2628,8 @@
   "TXT_CODE_db07cf9e": "Te teletransporta a desovar si de alguna manera sales de la frontera mundial",
   "TXT_CODE_db14fb46": "agregado exitosamente",
   "TXT_CODE_db37b7f9": "Error de descarga de imagen. Asegúrese de que el nombre de la imagen sea correcto o extraiga manualmente la imagen que necesita a través de la ventana acoplable en la consola de administración del nodo.",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "Número de inicios de sesión del panel",
   "TXT_CODE_db815f4a": "Perfil de regla de filtrado de texto (es posible que no funcione correctamente)",
   "TXT_CODE_db9375a5": "Se puede utilizar para mostrar sitios web externos.",

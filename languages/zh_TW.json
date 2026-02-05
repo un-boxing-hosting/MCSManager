@@ -2628,6 +2628,8 @@
   "TXT_CODE_db07cf9e": "若玩家超出世界邊界，將被傳送回出生點。",
   "TXT_CODE_db14fb46": "新增成功",
   "TXT_CODE_db37b7f9": "映像下載錯誤，請確保此映像名正確，或在節點管理的控制台處手動透過 docker pull 拉取您需要的映像，錯誤訊息：",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "面板登入次數",
   "TXT_CODE_db815f4a": "文字過濾規則設定檔（可能運作不正常）",
   "TXT_CODE_db9375a5": "可以用來顯示外部網站",

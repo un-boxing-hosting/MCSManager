@@ -2628,6 +2628,8 @@
   "TXT_CODE_db07cf9e": "Bir şekilde dünya sınırının dışına çıkarsanız sizi ortaya çıkarman için sizi ışınlar",
   "TXT_CODE_db14fb46": "Eklendi",
   "TXT_CODE_db37b7f9": "İmaj indirme hatası, lütfen imaj adının doğru olduğundan emin olun veya düğüm yönetimi terminali üzerinden docker pull kullanarak gerekli imajı manuel olarak çekin, hata:",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "Giriş Sayısı",
   "TXT_CODE_db815f4a": "Metin filtreleme kuralları yapılandırma dosyası (amaçlandığı gibi çalışmayabilir)",
   "TXT_CODE_db9375a5": "Harici web sitelerini görüntülemek için kullanılabilir",
