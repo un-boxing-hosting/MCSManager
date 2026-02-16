@@ -2875,7 +2875,7 @@
   "TXT_CODE_ebbb2def": "所有类别",
   "TXT_CODE_ebc235d5": "飞行中鞘翅每秒受到的耐久损伤。",
   "TXT_CODE_ebd2a6a1": "自定义布局",
-  "TXT_CODE_ebf01bcc": "在 MCSManager 中选择并安装一个你需要的 Java 版本。",
+  "TXT_CODE_ebf01bcc": "在 MCSManager 中选择并安装一个你需要的 Java 版本，仅适用于在没有使用 Docker 容器的情况下生效。",
   "TXT_CODE_ebf479f2": "在创造模式中使用末影珍珠后的冷却时间(单位：刻)",
   "TXT_CODE_ebfb4831": "一级分类（游戏名称）",
   "TXT_CODE_ec08484": "确认强制终止运行实例吗？这可能会造成实例数据损坏。",

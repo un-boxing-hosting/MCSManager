@@ -2875,7 +2875,7 @@
   "TXT_CODE_ebbb2def": "All Categories",
   "TXT_CODE_ebc235d5": "How much damage an elytra's durability takes during flight each second",
   "TXT_CODE_ebd2a6a1": "Custom Layout",
-  "TXT_CODE_ebf01bcc": "Select and install the Java version you need in MCSManager.",
+  "TXT_CODE_ebf01bcc": "Select and install the Java version you need in MCSManager. This only takes effect when not using Docker containers.",
   "TXT_CODE_ebf479f2": "The cooldown after using an ender pearl while in creative (in ticks)",
   "TXT_CODE_ebfb4831": "Primary Category (Game Name)",
   "TXT_CODE_ec08484": "Are you sure you want to forcefully terminate the running instance? This may cause instance data corruption.",
