@@ -28,11 +28,11 @@
 
 ## What is this?
 
-**MCSManager Panel** (or simply **MCSM Panel**) is a fast, distributed, multi-user, and modern web-based management panel for **`Minecraft`**, **`Steam`**, and other game servers.
+**MCSManager Panel** (or simply **MCSM Panel**) is a fast-deploying, distributed, multi-user, and modern web-based management panel for **`Minecraft`**, **`Steam`**, and other game servers.
 
 MCSManager has gained popularity within the **`Minecraft`** and **`Steam`** gaming communities. It enables you to manage multiple physical or virtual servers from a single platform, and offers a **secure**, **reliable**, and **granular multi-user permission system**. The MCSM Panel continues to support server administrators, operators, and independent developers, managing servers like **`Minecraft`**, **`Terraria`**, and other **`Steam`**-based games for them.
 
-MCSM also has **commercial applications** in mind, such as private server hosting and sales by **IDC service providers**. Several small and medium-sized enterprises already use this panel as a**server management** and **sales platform**. In addition, it supports **multi-language environments** (aka, i18n), making it accessible to users across different countries and regions without modifying source code.
+MCSM also has **commercial applications** in mind, such as private server hosting and sales by **IDC service providers**. Several small and medium-sized enterprises already use the panel as a combined **server management** and **sales platform**. In addition, it supports **multi-language environments**, making it accessible to users across different countries and regions.
 
 <img width="1871" height="1342" alt="terminal" src="https://github.com/user-attachments/assets/7f6ed988-e402-4347-94ee-a0469f6658da" />
 
@@ -52,18 +52,7 @@ MCSM also has **commercial applications** in mind, such as private server hostin
 4. Full **Docker Hub** image support, with built-in multi-user access and support for commercial instance hosting services.
 5. Distributed architecture, managing multiple machines from a single web panel.
 6. Lightweight technology stack. The entire project can be developed and maintained with TypeScript alone.
-7. Full **PTY** support
-
-<details>
-  <summary>Click to see more features!</summary>
-
-  8. No-compromise Docker support in the GUI
-  9. Powerful plugin management interface built in
-  10. Secure by design--even without SSL cerificates
-  11. Simple and intuitive UI
-  12. Key information avalible at a glance
-
-</details>
+7. ...and much more.
 
 <br />
 
@@ -88,7 +77,7 @@ Chinese: https://docs.mcsmanager.com/zh_cn/
 
 ### Windows
 
-**For Windows, MCSManager comes as a ready-to-run executable -- it works out of the box.**
+**For Windows systems, it comes as a ready-to-run integrated version - download and run it immediately.**
 
 Archive: https://download.mcsmanager.com/mcsmanager_windows_release.zip
 
@@ -98,7 +87,7 @@ Double-click `start.bat` to launch both the web panel and daemon process.
 
 ### Linux
 
-**One-Liner**
+**One-line command quick installation**
 
 ```bash
 sudo su -c "wget -qO- https://script.mcsmanager.com/setup.sh | bash"
@@ -118,7 +107,7 @@ systemctl stop mcsm-{web,daemon}  # Stop panel
 
 **Linux Manual Installation**
 
-- If the one-liner didn't work, you can install MCSManager manually by following the steps below:
+- If the one-click installation method doesn't work, you can install MCSManager manually by following the steps below:
 
 ```bash
 # Step 1: Navigate to the installation directory (create it if it doesn't exist)
@@ -159,7 +148,7 @@ http://<public IP>:23333/
 # The web interface will automatically detect and connect to the local daemon in most cases.
 ```
 
-> The above steps do **not** register the panel as a system service (in essence, it is not avalible under `systemctl`).
+> The above steps do **not** register the panel as a system service.  
 > To keep it running in the background, you’ll need to use tools like **`screen`** or **`tmux`**.
 
 If you prefer to run MCSManager as a system service, please refer to the official documentation for setup instructions.
@@ -172,7 +161,6 @@ If you prefer to run MCSManager as a system service, please refer to the officia
 
 # Step 1: Install Node.js (skip if already installed)
 # It's recommended to use the latest LTS version
-# Install homebrew if not already: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 brew install node
 node -v
 npm -v
@@ -316,7 +304,7 @@ MCSManager supports all major modern browsers, including:
 - `Safari`
 - `Opera`
 
-**Internet Explorer (IE)** is no longer supported. [Learn](https://digital.georgia.gov/blog-post/2021-08-24/we-dont-support-ie) [why](https://intercom.help/sheepcrm/en/articles/3619662-why-we-don-t-support-internet-explorer).
+**Internet Explorer (IE)** is no longer supported.
 
 <br />
 
@@ -342,4 +330,4 @@ Once resolved, we will credit the discoverer in the relevant code or release not
 
 This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
-&copy; 2026 MCSManager. All rights reserved.
+&copy; 2025 MCSManager. All rights reserved.
