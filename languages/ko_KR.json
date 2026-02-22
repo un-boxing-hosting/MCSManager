@@ -2655,6 +2655,8 @@
   "TXT_CODE_db07cf9e": "당신이 어떻게 든 세계 국경 밖으로 나가면 스폰으로 순간 이동합니다.",
   "TXT_CODE_db14fb46": "성공적으로 추가되었습니다",
   "TXT_CODE_db37b7f9": "이미지 다운로드 오류입니다. 이미지 이름이 올바른지 확인하거나 노드 관리 콘솔에서 docker pull을 통해 필요한 이미지를 수동으로 가져오세요.",
+  "TXT_CODE_docker_force_pull": "Force pull image",
+  "TXT_CODE_docker_force_pull_tip": "Always pull the image on start, even if it already exists locally.",
   "TXT_CODE_db64faf6": "패널 로그인 수",
   "TXT_CODE_db815f4a": "텍스트 필터링 규칙 프로필(제대로 작동하지 않을 수 있음)",
   "TXT_CODE_db9375a5": "외부 웹사이트를 표시하는 데 사용할 수 있습니다.",

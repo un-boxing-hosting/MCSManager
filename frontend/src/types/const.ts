@@ -129,6 +129,7 @@ export enum ScheduleCreateType {
 export const defaultDockerConfig: IGlobalInstanceDockerConfig = {
   containerName: "",
   image: "",
+  forcePullImage: false,
   memory: undefined,
   ports: [],
   extraVolumes: [],
