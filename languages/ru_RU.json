@@ -1669,7 +1669,7 @@
   "TXT_CODE_9fd05002": "Установите, умирает ли пчела после укуса",
   "TXT_CODE_9fe98f3": "Прослушиваемый порт",
   "TXT_CODE_9fed23ab": "Пожалуйста, введите имя образа",
-  "TXT_CODE_A0000001": "Применимо к команде запуска любой консольной программы, файлы скриптов не поддерживаются.<br />Например: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my server.jar -nogui",
+  "TXT_CODE_A0000001": "Применимо к командам запуска любых консольных программ и файлов скриптов.<br />Например: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my-server.jar -nogui, ./start.sh, start.bat",
   "TXT_CODE_ALL": "Все",
   "TXT_CODE_CLIENT": "Клиент",
   "TXT_CODE_CONFIG": "Config",

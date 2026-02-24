@@ -1669,7 +1669,7 @@
   "TXT_CODE_9fd05002": "Bir arının battıktan sonra ölmesi gerekip gerekmediğini ayarlayın",
   "TXT_CODE_9fe98f3": "Dinleme Bağlantı Noktası",
   "TXT_CODE_9fed23ab": "Lütfen resim adını girin",
-  "TXT_CODE_A0000001": "Herhangi bir konsol programının başlangıç komutu için geçerlidir, betik dosyaları desteklenmez.<br />Örneğin: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline. terminal=jline.UnsupportedTerminal -jar my server.jar -nogui",
+  "TXT_CODE_A0000001": "Herhangi bir konsol programı ve betik dosyası için başlangıç komutlarında geçerlidir.<br />Örneğin: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my-server.jar -nogui, ./start.sh, start.bat",
   "TXT_CODE_ALL": "Tümü",
   "TXT_CODE_CLIENT": "İstemci",
   "TXT_CODE_CONFIG": "Config",

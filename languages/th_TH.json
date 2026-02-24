@@ -1669,7 +1669,7 @@
   "TXT_CODE_9fd05002": "กำหนดว่าผึ้งควรตายหลังจากต่อยหรือไม่",
   "TXT_CODE_9fe98f3": "พอร์ตที่รอรับ",
   "TXT_CODE_9fed23ab": "กรุณาใส่ชื่ออิมเมจ",
-  "TXT_CODE_A0000001": "ใช้ได้กับคำสั่งเริ่มต้นของโปรแกรมคอนโซลใดๆ ไม่รองรับไฟล์สคริปต์<br />ตัวอย่าง: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline. terminal=jline.UnsupportedTerminal -jar my server.jar -nogui",
+  "TXT_CODE_A0000001": "ใช้ได้กับคำสั่งเริ่มต้นของโปรแกรมคอนโซลและไฟล์สคริปต์<br />ตัวอย่าง: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my-server.jar -nogui, ./start.sh, start.bat",
   "TXT_CODE_ALL": "ทั้งหมด",
   "TXT_CODE_CLIENT": "ไคลเอนต์",
   "TXT_CODE_CONFIG": "Config",

@@ -13,7 +13,7 @@ import logger from "../../../service/log";
 import { getRunAsUserParams } from "../../../tools/system_user";
 import Instance from "../../instance/instance";
 import { IInstanceProcess } from "../../instance/interface";
-import { commandStringToArray } from "../base/command_parser";
+import { buildStartupCommandList } from "../base/startup_command";
 import FunctionDispatcher from "../dispatcher";
 import AbsStartCommand from "../start";
 
@@ -168,15 +168,10 @@ export default class PtyStartCommand extends AbsStartCommand {
     }
 
     // command parsing
-    let commandList: string[] = [];
     const tmpStarCmd = await instance.parseTextParams(instance.config.startCommand);
-    if (os.platform() === "win32") {
-      // windows: cmd.exe /c {{startCommand}}
-      commandList = [tmpStarCmd];
-    } else {
-      // other
-      commandList = commandStringToArray(tmpStarCmd);
-    }
+    const commandList = buildStartupCommandList(tmpStarCmd, instance.absoluteCwdPath(), {
+      windowsRawMode: true
+    });
 
     if (commandList.length === 0)
       return instance.failure(new StartupError($t("TXT_CODE_pty_start.cmdEmpty")));

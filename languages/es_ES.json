@@ -1669,7 +1669,7 @@
   "TXT_CODE_9fd05002": "Establecer si una abeja debería morir después de aguantar",
   "TXT_CODE_9fe98f3": "puerto de escucha",
   "TXT_CODE_9fed23ab": "Por favor ingresa el nombre de la imagen",
-  "TXT_CODE_A0000001": "Adecuado para comandos de inicio de cualquier programa de consola, no se admiten archivos de script;<br />Por ejemplo: \"C://Archivos de programa/Java/bin/java.exe\" -Dfile.encoding= utf-8 -Djline.terminal =jline.UnsupportedTerminal -jar my server.jar -nogui <br/>Si usa un contenedor Docker, no necesita completar el comando de inicio y comenzará a usar el comando definido por la imagen.",
+  "TXT_CODE_A0000001": "Adecuado para comandos de inicio de cualquier programa de consola y archivos de script;<br />Por ejemplo: \"C://Archivos de programa/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my-server.jar -nogui, ./start.sh, start.bat <br/>Si usa un contenedor Docker, puede dejar vacío el comando de inicio y usar el comando definido por la imagen.",
   "TXT_CODE_ALL": "Todo",
   "TXT_CODE_CLIENT": "Cliente",
   "TXT_CODE_CONFIG": "Config",

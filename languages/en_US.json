@@ -1669,7 +1669,7 @@
   "TXT_CODE_9fd05002": "Set whether a bee should die after stinging",
   "TXT_CODE_9fe98f3": "Listening Port",
   "TXT_CODE_9fed23ab": "Please enter the image name",
-  "TXT_CODE_A0000001": "Applicable to the startup command of any console program, script files are not supported.<br />For example: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline. terminal=jline.UnsupportedTerminal -jar my server.jar -nogui",
+  "TXT_CODE_A0000001": "Applicable to startup commands for console programs and script files.<br />Examples: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my-server.jar -nogui, ./start.sh, start.bat",
   "TXT_CODE_ALL": "All",
   "TXT_CODE_CLIENT": "Client",
   "TXT_CODE_CONFIG": "Config",

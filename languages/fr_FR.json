@@ -1669,7 +1669,7 @@
   "TXT_CODE_9fd05002": "Définissez si une abeille doit mourir après avoir piqué",
   "TXT_CODE_9fe98f3": "port d'écoute",
   "TXT_CODE_9fed23ab": "Veuillez entrer le nom de l'image",
-  "TXT_CODE_A0000001": "Convient aux commandes de démarrage de n'importe quel programme console, les fichiers de script ne sont pas pris en charge ;<br />Par exemple : \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding= utf-8 -Djline.terminal =jline.UnsupportedTerminal -jar my server.jar -nogui <br/>Si vous utilisez un conteneur Docker, vous n'avez pas besoin de renseigner la commande de démarrage et commencerez à utiliser la commande définie par l'image.",
+  "TXT_CODE_A0000001": "Convient aux commandes de démarrage de tout programme console et des fichiers de script ;<br />Par exemple : \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my-server.jar -nogui, ./start.sh, start.bat <br/>Si vous utilisez un conteneur Docker, vous pouvez laisser la commande de démarrage vide et utiliser la commande définie par l'image.",
   "TXT_CODE_ALL": "Tous",
   "TXT_CODE_CLIENT": "Client",
   "TXT_CODE_CONFIG": "Config",

@@ -1669,7 +1669,7 @@
   "TXT_CODE_9fd05002": "Defina se uma abelha deve morrer após a picada",
   "TXT_CODE_9fe98f3": "Porta de Escuta",
   "TXT_CODE_9fed23ab": "Por favor insira o nome da imagem",
-  "TXT_CODE_A0000001": "Aplicável ao comando de inicialização de qualquer programa de console, arquivos de script não são suportados.<br />Por exemplo: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline. terminal=jline.UnsupportedTerminal -jar my server.jar -nogui",
+  "TXT_CODE_A0000001": "Aplicável ao comando de inicialização de qualquer programa de console e arquivos de script.<br />Por exemplo: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my-server.jar -nogui, ./start.sh, start.bat",
   "TXT_CODE_ALL": "Todos",
   "TXT_CODE_CLIENT": "Cliente",
   "TXT_CODE_CONFIG": "Config",
