@@ -7,7 +7,7 @@ import logger from "../../../service/log";
 import { getRunAsUserParams } from "../../../tools/system_user";
 import Instance from "../../instance/instance";
 import { IInstanceProcess } from "../../instance/interface";
-import { commandStringToArray } from "../base/command_parser";
+import { buildStartupCommandList } from "../base/startup_command";
 import AbsStartCommand from "../start";
 
 // Error exception at startup
@@ -72,7 +72,7 @@ export default class GeneralStartCommand extends AbsStartCommand {
 
     // command parsing
     const tmpStartCmd = await instance.parseTextParams(instance.config.startCommand);
-    const commandList = commandStringToArray(tmpStartCmd);
+    const commandList = buildStartupCommandList(tmpStartCmd, instance.absoluteCwdPath());
     const commandExeFile = commandList[0];
     const commandParameters = commandList.slice(1);
     if (commandList.length === 0) {

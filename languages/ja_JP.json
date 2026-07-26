@@ -1686,7 +1686,7 @@
   "TXT_CODE_9fd05002": "蜂が刺された後に死ぬべきかどうかを設定します",
   "TXT_CODE_9fe98f3": "リスニングポート",
   "TXT_CODE_9fed23ab": "Dockerイメージ名を入力してください",
-  "TXT_CODE_A0000001": "あらゆるコンソール プログラムの起動コマンドに適していますが、スクリプト ファイルはサポートされていません。<br />例: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding= utf-8 -Djline.terminal =jline.Unsupportedterminal -jar my server.jar -nogui <br/>Docker コンテナを使用する場合、起動コマンドを入力する必要はなく、イメージで定義されたコマンドを使用して開始されます。",
+  "TXT_CODE_A0000001": "あらゆるコンソールプログラムおよびスクリプトファイルの起動コマンドに対応しています。<br />例: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my-server.jar -nogui、./start.sh、start.bat <br/>Docker コンテナを使用する場合、起動コマンドは空欄のままで、イメージで定義されたコマンドを使用できます。",
   "TXT_CODE_ALL": "すべて",
   "TXT_CODE_CLIENT": "クライアント",
   "TXT_CODE_CONFIG": "Config",

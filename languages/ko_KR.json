@@ -1686,7 +1686,7 @@
   "TXT_CODE_9fd05002": "쏘는 후에 꿀벌이 죽어야하는지 여부를 설정하십시오",
   "TXT_CODE_9fe98f3": "청취 포트",
   "TXT_CODE_9fed23ab": "이미지 이름을 입력해주세요",
-  "TXT_CODE_A0000001": "모든 콘솔 프로그램의 시작 명령에 적합하며 스크립트 파일은 지원되지 않습니다.<br />예: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding= utf-8 -Djline.terminal =jline.UnsupportedTerminal -jar my server.jar -nogui <br/>Docker 컨테이너를 사용하는 경우 시작 명령을 입력할 필요가 없으며 이미지에 정의된 명령을 사용하여 시작됩니다.",
+  "TXT_CODE_A0000001": "모든 콘솔 프로그램 및 스크립트 파일의 시작 명령에 적용됩니다.<br />예: \"C://Program Files/Java/bin/java.exe\" -Dfile.encoding=utf-8 -Djline.terminal=jline.UnsupportedTerminal -jar my-server.jar -nogui, ./start.sh, start.bat <br/>Docker 컨테이너를 사용하는 경우 시작 명령을 비워 두고 이미지에 정의된 명령을 사용할 수 있습니다.",
   "TXT_CODE_ALL": "전체",
   "TXT_CODE_CLIENT": "클라이언트",
   "TXT_CODE_CONFIG": "Config",
