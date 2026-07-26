@@ -42,6 +42,7 @@ export const getFileStatus = useDefineApi<
     globalFileTask: number;
     downloadFileFromURLTask: number;
     downloadTasks?: {
+      taskId: string;
       path: string;
       total: number;
       current: number;
@@ -176,12 +177,30 @@ export const downloadFromUrl = useDefineApi<
   method: "POST"
 });
 
+export const downloadFromUrlStop = useDefineApi<
+  {
+    params: {
+      daemonId: string;
+      uuid: string;
+    };
+    data: {
+      taskId?: string;
+      fileName?: string;
+    };
+  },
+  boolean
+>({
+  url: "/api/files/download_from_url_stop",
+  method: "POST"
+});
+
 export const uploadAddress = useDefineApi<
   {
     params: {
       upload_dir: string;
       daemonId: string;
       uuid: string;
+      file_name?: string;
     };
   },
   {
@@ -280,5 +299,32 @@ export const changePermission = useDefineApi<
   boolean
 >({
   url: "/api/files/chmod",
+  method: "PUT"
+});
+
+export const changePermissionBatch = useDefineApi<
+  {
+    params: {
+      daemonId: string;
+      uuid: string;
+    };
+    data: {
+      chmod: number;
+      deep: boolean;
+      targets: string[];
+    };
+  },
+  {
+    success: number;
+    failed: number;
+    total: number;
+    results: {
+      target: string;
+      success: boolean;
+      error?: string;
+    }[];
+  }
+>({
+  url: "/api/files/chmod_batch",
   method: "PUT"
 });

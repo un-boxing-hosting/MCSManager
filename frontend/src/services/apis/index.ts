@@ -105,6 +105,20 @@ export const remoteInstances = useDefineApi<
   url: "/api/service/remote_service_instances"
 });
 
+export const remoteInstancesGlobal = useDefineApi<
+  {
+    params: {
+      page: number;
+      page_size: number;
+      instance_name?: string;
+      status?: string;
+    };
+  },
+  Record<string, { instances: InstanceDetail[]; maxPage: number; page: number; error?: string }>
+>({
+  url: "/api/service/remote_services_instances_global"
+});
+
 export const settingInfo = useDefineApi<any, Settings>({
   url: "/api/overview/setting"
 });
@@ -249,4 +263,48 @@ export const connectNode = useDefineApi<
 >({
   url: "/api/service/link_remote_service",
   method: "GET"
+});
+
+export interface SsoPublicConfig {
+  enabled: boolean;
+  onlyMode: boolean;
+  autoRedirect: boolean;
+  providerName: string;
+  iconUrl: string;
+}
+
+export const ssoConfig = useDefineApi<any, SsoPublicConfig | null>({
+  url: "/api/auth/sso/config",
+  method: "GET"
+});
+
+export const ssoBindLogin = useDefineApi<
+  {
+    data: {
+      username: string;
+      password: string;
+      code?: string;
+    };
+  },
+  string
+>({
+  url: "/api/auth/sso/bind",
+  method: "POST"
+});
+
+export const ssoBindCurrent = useDefineApi<any, boolean>({
+  url: "/api/auth/sso/bind-current",
+  method: "POST"
+});
+
+export const ssoUnbind = useDefineApi<
+  {
+    data: {
+      uuid: string;
+    };
+  },
+  boolean
+>({
+  url: "/api/auth/sso/unbind",
+  method: "PUT"
 });

@@ -7,7 +7,7 @@ import permission from "../middleware/permission";
 import validator from "../middleware/validator";
 import { checkInstanceAdvancedParams, getAppMarketList } from "../service/instance_service";
 import { operationLogger } from "../service/operation_logger";
-import { getUserUuid } from "../service/passport_service";
+import { getUserPermission, getUserUuid } from "../service/passport_service";
 import { timeUuid } from "../service/password";
 import { isHaveInstanceByUuid, isTopPermissionByUuid } from "../service/permission_service";
 import RemoteRequest, { RemoteRequestTimeoutError } from "../service/remote_command";
@@ -161,45 +161,6 @@ router.all(
         operator_ip: ctx.ip,
         operator_name: ctx.session?.["userName"],
         instance_name: result?.instances?.[0]?.nickname
-      });
-      ctx.body = result;
-    } catch (err) {
-      ctx.body = err;
-    }
-  }
-);
-
-// [Low-level Permission]
-// start asynchronous task
-router.post(
-  "/asynchronous",
-  speedLimit(3),
-  permission({ level: ROLE.USER }),
-  validator({
-    query: { daemonId: String, uuid: String, task_name: String },
-    body: {}
-  }),
-  async (ctx) => {
-    try {
-      const daemonId = String(ctx.query.daemonId);
-      const instanceUuid = String(ctx.query.uuid);
-      const taskName = String(ctx.query.task_name).toLowerCase().trim();
-      const parameter = ctx.request.body;
-
-      // some asynchronous tasks are only allowed for administrators
-      const needTopPermissionTask = ["quick_install"];
-      if (
-        needTopPermissionTask.includes(taskName) &&
-        !isTopPermissionByUuid(ctx.session?.["uuid"])
-      ) {
-        throw new Error("illegal access");
-      }
-
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/asynchronous", {
-        instanceUuid,
-        taskName,
-        parameter
       });
       ctx.body = result;
     } catch (err) {
@@ -462,7 +423,7 @@ router.put(
       let advancedConfig = {};
       advancedConfig = checkInstanceAdvancedParams(config, isTopPermission);
 
-      new RemoteRequest(remoteService).request("instance/update", {
+      await new RemoteRequest(remoteService).request("instance/update", {
         instanceUuid,
         config: {
           pingConfig: !isEmpty(config.pingConfig) ? pingConfig : null,
@@ -525,6 +486,36 @@ router.get(
 );
 
 // [Low-level Permission]
+// start asynchronous task
+router.post(
+  "/asynchronous",
+  speedLimit(3),
+  permission({ level: ROLE.USER }),
+  validator({
+    query: { daemonId: String, uuid: String, task_name: String },
+    body: {}
+  }),
+  async (ctx) => {
+    try {
+      const daemonId = String(ctx.query.daemonId);
+      const instanceUuid = String(ctx.query.uuid);
+      const taskName = String(ctx.query.task_name).toLowerCase().trim();
+      const parameter = ctx.request.body;
+      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const result = await new RemoteRequest(remoteService).request("instance/asynchronous", {
+        instanceUuid,
+        taskName,
+        parameter,
+        role: getUserPermission(ctx) // Permission check is performed in the daemon
+      });
+      ctx.body = result;
+    } catch (err) {
+      ctx.body = err;
+    }
+  }
+);
+
+// [Low-level Permission]
 // Reinstall the instance
 router.post(
   "/install_instance",
@@ -564,11 +555,15 @@ router.post(
       if (!targetPresetConfig) throw new Error("Preset Config is not found!");
 
       const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      new RemoteRequest(remoteService).request("instance/asynchronous", {
+      await new RemoteRequest(remoteService).request("instance/asynchronous", {
         taskName: "install_instance",
         instanceUuid,
-        parameter: targetPresetConfig
+        parameter: targetPresetConfig,
+        // targetPresetConfig is a template configured by the administrator,
+        // so it is theoretically safe and does not require a permission check
+        role: ROLE.ADMIN
       });
+
       ctx.body = true;
     } catch (err) {
       ctx.body = err;

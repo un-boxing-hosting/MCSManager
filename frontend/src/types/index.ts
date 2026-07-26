@@ -33,6 +33,10 @@ export interface InstanceRuntimeInfo {
   memoryUsagePercent?: number;
   rxBytes?: number;
   txBytes?: number;
+  rxRate?: number;
+  txRate?: number;
+  networkInterfaces?: string[];
+  networkStatsSource?: "docker";
   readBytes?: number;
   writeBytes?: number;
   memoryUsage?: number;
@@ -40,7 +44,7 @@ export interface InstanceRuntimeInfo {
   storageUsage?: number;
   storageLimit?: number;
   allocatedPorts?: {
-    host: number;
+    host: string;
     container: number;
     protocol: string;
   }[];
@@ -68,6 +72,7 @@ export interface Settings {
   httpPort: number;
   httpIp: any;
   reverseProxyMode: boolean;
+  reverseProxyHeader: string;
   dataPort: number;
   forwardType: number;
   crossDomain: boolean;
@@ -88,6 +93,15 @@ export interface Settings {
   allowChangeCmd: boolean;
   registerCode: string;
   panelId: string;
+  ssoEnabled: boolean;
+  ssoOnlyMode: boolean;
+  ssoAutoRedirect: boolean;
+  ssoProviderName: string;
+  ssoIconUrl: string;
+  ssoIssuer: string;
+  ssoClientId: string;
+  ssoClientSecret: string;
+  ssoCallbackUrl: string;
 }
 
 export interface ImageInfo {
@@ -246,5 +260,7 @@ export interface PanelStatus {
     businessId: string;
     allowChangeCmd: boolean;
     panelId: string;
+    ssoEnabled: boolean;
+    ssoOnlyMode: boolean;
   };
 }

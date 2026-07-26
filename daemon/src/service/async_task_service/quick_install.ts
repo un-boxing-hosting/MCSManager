@@ -4,11 +4,11 @@ import { t } from "i18next";
 import path from "path";
 import { pipeline, Readable } from "stream";
 import { v4 } from "uuid";
+import { getCommonHeaders } from "../../common/network";
 import Instance from "../../entity/instance/instance";
 import InstanceConfig from "../../entity/instance/Instance_config";
 import { $t } from "../../i18n";
 import { getFileManager } from "../file_router_service";
-import { getCommonHeaders } from "../../common/network";
 import { InstanceUpdateAction } from "../instance_update_action";
 import logger from "../log";
 import InstanceSubsystem from "../system_instance";
@@ -95,7 +95,7 @@ export class QuickInstallTask extends AsyncTask {
     // Get total file size
     const contentLength = response.headers["content-length"];
     if (contentLength) {
-      this.downloadProgress.totalBytes = parseInt(contentLength);
+      this.downloadProgress.totalBytes = parseInt(`${contentLength}`);
     }
 
     let lastProgressUpdate = Date.now();

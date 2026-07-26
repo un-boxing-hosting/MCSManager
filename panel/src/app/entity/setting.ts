@@ -7,6 +7,8 @@ export default class SystemConfig {
 
   // reverse proxy mode
   reverseProxyMode: boolean = false;
+  // reverse proxy header
+  reverseProxyHeader: string = "X-Real-IP";
 
   // data transfer port
   dataPort: number = 23334;
@@ -49,13 +51,18 @@ export default class SystemConfig {
   language = "en_us";
 
   // Quick installation address
-  presetPackAddr = "https://script.mcsmanager.com/market.json";
+  presetPackAddr = "https://script.mcsmanager.com/market-v2.json";
 
   // Redis address (Experimental Features)
   redisUrl = "";
 
   // Whether to allow users to edit the start & update command of Docker instances
   allowChangeCmd = false;
+
+  // This option determines whether the entire panel can use an API key.
+  // If set to fail, even if the user has already generated an API key,
+  // they will no longer be able to use it.
+  enableApiKey = false;
 
   // -----
   // After it is enabled, you can connect to the redeem.mcsmanager.com platform
@@ -66,6 +73,26 @@ export default class SystemConfig {
   panelId = "";
   registerCode = "";
   // -----
+
+  // SSO / OpenID Connect / OAuth 2.0
+  ssoEnabled = false;
+  ssoType: "oidc" | "oauth2" = "oidc";
+  ssoOnlyMode = false;
+  ssoAutoRedirect = false;
+  ssoProviderName = "";
+  ssoIconUrl = "";
+  // OIDC-specific
+  ssoIssuer = "";
+  // OAuth 2.0-specific
+  ssoAuthorizeUrl = "";
+  ssoTokenUrl = "";
+  ssoUserinfoUrl = "";
+  ssoUserIdField = "id";
+  ssoScopes = "";
+  // Shared
+  ssoClientId = "";
+  ssoClientSecret = "";
+  ssoCallbackUrl = "";
 
   // Whether to enable SSL/TLS (HTTPS)
   ssl = false;

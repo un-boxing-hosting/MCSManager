@@ -24,6 +24,7 @@ export interface FileStatus {
   globalFileTask: number;
   downloadFileFromURLTask: number;
   downloadTasks?: {
+    taskId: string;
     path: string;
     total: number;
     current: number;
@@ -52,4 +53,17 @@ export interface Permission {
 export interface DownloadFileConfigItem {
   url: string;
   fileName: string;
+}
+
+export interface BatchChmodResultItem {
+  target: string;
+  success: boolean;
+  error?: string;
+}
+
+export interface BatchChmodResult {
+  success: number;
+  failed: number;
+  total: number;
+  results: BatchChmodResultItem[];
 }

@@ -3,18 +3,21 @@ import { useCommandHistory } from "@/hooks/useCommandHistory";
 import { t } from "@/lang/i18n";
 import { setUpTerminalStreamChannel } from "@/services/apis/instance";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { toCopy } from "@/tools/copy";
 import { mapDaemonAddress, parseForwardAddress } from "@/tools/protocol";
 import type { InstanceDetail } from "@/types";
 import { INSTANCE_STATUS_CODE } from "@/types/const";
 import type { DefaultEventsMap } from "@socket.io/component-emitter";
 import { CanvasAddon } from "@xterm/addon-canvas";
 import { FitAddon } from "@xterm/addon-fit";
+import { Unicode11Addon } from "@xterm/addon-unicode11";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal } from "@xterm/xterm";
 import EventEmitter from "eventemitter3";
 import type { Socket } from "socket.io-client";
 import { computed, onMounted, onUnmounted, ref, unref } from "vue";
 import { makeSocketIo } from "./useSocketIo";
+import { createTerminalHistoryReplayGate } from "./terminalHistoryReplayGate";
 
 export const TERM_COLOR = {
   TERM_RESET: "\x1B[0m",
@@ -66,6 +69,8 @@ export function useTerminal() {
   const terminal = ref<Terminal>();
   const isConnect = ref<boolean>(false);
   const socketAddress = ref("");
+  let isManualDisconnect = false;
+  const historyReplayGate = createTerminalHistoryReplayGate();
 
   const isGlobalTerminal = computed(() => {
     return state.value?.config.nickname === GLOBAL_INSTANCE_NAME;
@@ -83,6 +88,7 @@ export function useTerminal() {
 
   const execute = async (config: UseTerminalParams) => {
     isReady.value = false;
+    isManualDisconnect = false;
 
     if (socket) {
       return socket;
@@ -153,7 +159,9 @@ export function useTerminal() {
     });
 
     socket.on("disconnect", () => {
-      console.error("[Socket.io] disconnect:", addr);
+      if (!isManualDisconnect) {
+        console.warn("[Socket.io] disconnect:", addr);
+      }
       isConnect.value = false;
       events.emit("disconnect");
     });
@@ -248,6 +256,10 @@ export function useTerminal() {
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
 
+    const unicode11Addon = new Unicode11Addon();
+    term.loadAddon(unicode11Addon);
+    term.unicode.activeVersion = "11";
+
     terminal.value = term;
 
     const gl = document.createElement("canvas").getContext("webgl2");
@@ -271,17 +283,9 @@ export function useTerminal() {
       if (arg.type === "keydown" && arg.ctrlKey && arg.code === "KeyC") {
         const selection = term.getSelection();
         if (selection) {
-          // If not in SecureContext, writeText will fail. Fallback to browser's default copy behavior, but selection won't be cleared.
-          if (window.isSecureContext) {
-            arg.preventDefault()
-          }
-
-          navigator.clipboard?.writeText(selection).then(() => {
-             term.clearSelection();
-          }).catch(err => {
-             console.error("Could not copy text: ", err);
-          });
-
+          arg.preventDefault();
+          toCopy(selection);
+          term.clearSelection();
           return false;
         }
       }
@@ -307,6 +311,13 @@ export function useTerminal() {
     }
 
     term.onData((data) => {
+      // Ignore input events fired while replaying historical backlog —
+      // these are xterm.js's own synthesized escape-sequence replies
+      // (e.g. cursor position reports), not real keystrokes.
+      if (historyReplayGate.isReplaying()) {
+        return;
+      }
+
       // If the PTY terminal is disabled, no input is sent.
       if (
         state.value?.config.terminalOption?.pty === false ||
@@ -332,6 +343,26 @@ export function useTerminal() {
 
     return term;
   };
+
+  function writeHistoryLog(text: string): Promise<void> {
+    return new Promise((resolve) => {
+      const term = terminal.value;
+      if (!term) {
+        resolve();
+        return;
+      }
+      historyReplayGate.begin();
+      try {
+        term.write(text, () => {
+          historyReplayGate.end();
+          resolve();
+        });
+      } catch (error) {
+        historyReplayGate.end();
+        resolve();
+      }
+    });
+  }
 
   const clearTerminal = () => {
     terminal.value?.clear();
@@ -366,6 +397,7 @@ export function useTerminal() {
     clearInterval(fitAddonTask);
     clearInterval(statusQueryTask);
     events.removeAllListeners();
+    isManualDisconnect = true;
     socket?.disconnect();
     socket?.removeAllListeners();
   });
@@ -388,7 +420,8 @@ export function useTerminal() {
     execute,
     initTerminalWindow,
     sendCommand,
-    clearTerminal
+    clearTerminal,
+    writeHistoryLog
   };
 }
 
