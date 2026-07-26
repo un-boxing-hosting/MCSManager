@@ -13,7 +13,7 @@ import { bind2FA } from "../services/apis/user";
 const { state, updateUserInfo } = useAppStateStore();
 const { state: tools } = useAppToolsStore();
 
-const { execute, isLoading: setUserApiKeyLoading } = setUserApiKey();
+const { execute: executeSetUserApiKey, isLoading: setUserApiKeyLoading } = setUserApiKey();
 const { execute: executeUpdatePassword, isLoading: updatePasswordLoading } = updatePassword();
 
 const formState = reactive({
@@ -27,15 +27,20 @@ const formState = reactive({
 const formRef = ref<FormInstance>();
 
 const handleGenerateApiKey = async (enable: boolean) => {
-  await execute({
-    data: {
-      enable
-    },
-    forceRequest: true,
-    errorAlert: true
-  });
-  updateUserInfo();
-  return message.success(t("TXT_CODE_d3de39b4"));
+  try {
+    await executeSetUserApiKey({
+      data: {
+        enable
+      },
+      forceRequest: true,
+      errorAlert: true
+    });
+
+    updateUserInfo();
+    return message.success(t("TXT_CODE_d3de39b4"));
+  } catch (error: any) {
+    return reportErrorMsg(error.message);
+  }
 };
 
 const handleChangePassword = async () => {

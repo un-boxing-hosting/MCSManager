@@ -127,6 +127,7 @@ export enum ScheduleCreateType {
 }
 
 export const defaultDockerConfig: IGlobalInstanceDockerConfig = {
+  updateCommandImage: "",
   containerName: "",
   image: "",
   forcePullImage: false,
@@ -145,7 +146,13 @@ export const defaultDockerConfig: IGlobalInstanceDockerConfig = {
   changeWorkdir: true,
   memorySwap: undefined,
   memorySwappiness: undefined,
-  labels: []
+  labels: [],
+  gpuEnabled: false,
+  gpuCount: -1,
+  gpuDeviceIds: [],
+  gpuDriver: "nvidia",
+  deviceReadBps: [],
+  deviceWriteBps: []
 };
 
 export const defaultInstanceJavaConfig: IInstanceJavaConfig = {
@@ -156,6 +163,7 @@ export const defaultInstanceInfo: IGlobalInstanceConfig = {
   nickname: "",
   startCommand: "",
   stopCommand: "^c",
+  stopTimeout: 0,
   cwd: "",
   ie: "UTF-8",
   oe: "UTF-8",

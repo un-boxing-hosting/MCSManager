@@ -3,6 +3,7 @@ declare global {
     nickname: string;
     startCommand: string;
     stopCommand: string;
+    stopTimeout?: number;
     cwd: string;
     ie: string;
     oe: string;
@@ -74,6 +75,8 @@ declare global {
   }
 
   interface IGlobalInstanceDockerConfig {
+    /** Docker image for update command; empty = not used */
+    updateCommandImage?: string;
     containerName?: string;
     image?: string;
     forcePullImage?: boolean;
@@ -97,6 +100,21 @@ declare global {
     capDrop?: string[];
     devices?: string[];
     privileged?: boolean;
+    /** Upload speed limit in KB/s */
+    uploadSpeedLimit?: number;
+    /** Download speed limit in KB/s */
+    downloadSpeedLimit?: number;
+    /** Whether to enable GPU passthrough */
+    gpuEnabled?: boolean;
+    /** GPU count: -1 = all GPUs, 0 = none, positive integer = specific count */
+    gpuCount?: number;
+    /** Specific GPU device IDs, e.g. ["0","1"] or ["GPU-xxxx"]. Mutually exclusive with gpuCount */
+    gpuDeviceIds?: string[];
+    /** GPU driver name, default "nvidia" */
+    gpuDriver?: string;
+    /** Docker device read/write BPS. Format: /dev/sda:10MB */
+    deviceReadBps?: string[];
+    deviceWriteBps?: string[];
   }
 
   interface IPanelResponseProtocol {
@@ -164,6 +182,10 @@ declare global {
       portRangeEnd: number;
       portAssignInterval: number;
       port: number;
+      outputBufferSize: number;
+      enableSoftShutdown: boolean;
+      softShutdownSkipDocker: boolean;
+      softShutdownWaitSeconds: number;
     };
     dockerPlatforms?: string[];
   }
@@ -223,6 +245,8 @@ declare global {
       pageTitle: string;
       logoImage: string;
       backgroundImage: string;
+      /** Main app navigation: "left" = sidebar, "right" = top header only */
+      sidebarPosition?: "left" | "right";
     };
   }
 
@@ -260,6 +284,10 @@ declare global {
     remark: string;
     targetLink?: string;
     author: string;
+    dockerOptional?: {
+      image: string;
+      updateCommandImage?: string;
+    };
     setupInfo: IGlobalInstanceConfig;
     gameType: string;
     image: string;

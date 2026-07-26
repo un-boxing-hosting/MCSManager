@@ -1,9 +1,9 @@
-import { getCurrentLang, isCN, t } from "@/lang/i18n";
+import { getCurrentLang, t } from "@/lang/i18n";
 import { quickInstallListAddr } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
 import type { QuickStartPackages } from "@/types";
-import { Modal } from "ant-design-vue";
 import { computed, reactive, ref } from "vue";
+import type { ComputedNodeInfo } from "./useOverviewInfo";
 
 // Constants
 export const SEARCH_ALL_KEY = "ALL";
@@ -19,6 +19,10 @@ export interface SearchForm {
   category: string;
   gameType: string;
   platform: string;
+  /** Fuzzy search keyword for package name/title and description */
+  keyword: string;
+  isSupportDocker: boolean;
+  system: "win" | "linux";
 }
 
 export interface UseMarketPackagesOptions {
@@ -31,14 +35,16 @@ export interface UseMarketPackagesOptions {
 export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
   const packages = ref<QuickStartPackages[]>([]);
   const { onlyDockerTemplate = false } = options;
-  const defaultLanguage = isCN() ? getCurrentLang() : "en_us";
 
   // Search form state
   const searchForm = reactive<SearchForm>({
-    language: defaultLanguage,
+    language: getCurrentLang(),
     category: SEARCH_ALL_KEY,
     gameType: SEARCH_ALL_KEY,
-    platform: SEARCH_ALL_KEY
+    platform: SEARCH_ALL_KEY,
+    keyword: "",
+    isSupportDocker: false,
+    system: "linux"
   });
 
   // Generic filter condition checker function
@@ -47,12 +53,16 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
     field: keyof QuickStartPackages,
     filterValue: string
   ): boolean => {
-    return filterValue === SEARCH_ALL_KEY || item[field] === filterValue;
+    return (
+      filterValue === SEARCH_ALL_KEY ||
+      item[field] === filterValue ||
+      item[field] === SEARCH_ALL_KEY
+    );
   };
 
   // Specific filter functions
   const matchesLanguageFilter = (item: QuickStartPackages): boolean => {
-    return matchesFilterCondition(item, "language", searchForm.language);
+    return item.language === searchForm.language || item.language === "en_us";
   };
 
   const matchesGameTypeFilter = (item: QuickStartPackages): boolean => {
@@ -64,7 +74,21 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
   };
 
   const matchesPlatformFilter = (item: QuickStartPackages): boolean => {
+    console.debug("matchesFilterCondition", item.platform, "platform", searchForm.platform);
     return matchesFilterCondition(item, "platform", searchForm.platform);
+  };
+
+  /**
+   * Checks if item matches the keyword filter (fuzzy match on title and description).
+   * Empty keyword matches all items. Matching is case-insensitive.
+   */
+  const matchesKeywordFilter = (item: QuickStartPackages): boolean => {
+    const k = searchForm.keyword?.trim() ?? "";
+    if (!k) return true;
+    const lower = k.toLowerCase();
+    const record = item as unknown as Record<string, unknown>;
+    const textFields: string[] = [item.title ?? "", item.description ?? ""];
+    return textFields.some((t) => t.toLowerCase().includes(lower));
   };
 
   // Get filtered packages based on current search criteria
@@ -76,16 +100,17 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
     }
 
     return packages.value.filter((item) => {
-      if (onlyDockerTemplate && !item.setupInfo?.docker) {
+      if (onlyDockerTemplate && !item.setupInfo?.docker && !item?.dockerOptional) {
         return false;
       }
 
-      // Apply base filters (language, game type, category, platform)
+      // Apply base filters (language, game type, category, platform, keyword)
       const baseFilters = [
         matchesLanguageFilter(item),
         matchesGameTypeFilter(item),
         matchesCategoryFilter(item),
-        matchesPlatformFilter(item)
+        matchesPlatformFilter(item),
+        matchesKeywordFilter(item)
       ];
 
       // Combine base filters with additional custom filters if provided
@@ -138,6 +163,7 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
       });
       filteredPackages = Array.from(map.values());
     }
+
     return filteredPackages;
   };
 
@@ -210,10 +236,11 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
 
   // Handler functions
   const handleReset = () => {
-    searchForm.language = defaultLanguage;
+    searchForm.language = SEARCH_ALL_KEY;
     searchForm.gameType = SEARCH_ALL_KEY;
     searchForm.category = SEARCH_ALL_KEY;
-    searchForm.platform = SEARCH_ALL_KEY;
+    // searchForm.platform = SEARCH_ALL_KEY;
+    searchForm.keyword = "";
   };
 
   const handleGameTypeChange = () => {
@@ -231,8 +258,18 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
     searchForm.category = SEARCH_ALL_KEY;
   };
 
-  const handleSelectTopCategory = (item: QuickStartPackages) => {
+  const handleSelectTopCategory = (item: QuickStartPackages, node?: ComputedNodeInfo) => {
     searchForm.gameType = item.gameType;
+    searchForm.isSupportDocker = node?.dockerPlatforms?.length ? true : false;
+    let platform = SEARCH_ALL_KEY;
+    if (
+      String(node?.system?.type)
+        .toLowerCase()
+        .includes("windows")
+    ) {
+      platform = "Windows";
+    }
+    searchForm.platform = platform;
   };
 
   const { execute: getQuickInstallListAddr, isLoading: appListLoading } = quickInstallListAddr();
@@ -241,12 +278,6 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
       const list = await getQuickInstallListAddr();
       languageOptions.value = list.value?.languages || [];
       packages.value = list.value?.packages || [];
-      if (!list.value?.packages || list.value?.packages.length === 0) {
-        Modal.error({
-          title: t("TXT_CODE_c534ca49"),
-          content: t("TXT_CODE_bcfaf14d")
-        });
-      }
     } catch (err: any) {
       console.error(err.message);
       return reportErrorMsg(err.message);
@@ -265,6 +296,7 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
     matchesGameTypeFilter,
     matchesCategoryFilter,
     matchesPlatformFilter,
+    matchesKeywordFilter,
 
     // Core functions
     getFilteredPackages,
