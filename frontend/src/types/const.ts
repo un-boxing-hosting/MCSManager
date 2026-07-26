@@ -130,6 +130,7 @@ export const defaultDockerConfig: IGlobalInstanceDockerConfig = {
   updateCommandImage: "",
   containerName: "",
   image: "",
+  forcePullImage: false,
   memory: undefined,
   ports: [],
   extraVolumes: [],

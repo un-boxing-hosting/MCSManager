@@ -29,6 +29,7 @@ mkdir production-code
 mkdir production-code/daemon
 mkdir production-code/web
 mkdir production-code/web/public
+mkdir production-code/common
 
 mv "${BASE_PATH}/daemon/production/app.js" "${BASE_PATH}/production-code/daemon"
 mv "${BASE_PATH}/daemon/production/app.js.map" "${BASE_PATH}/production-code/daemon"
@@ -39,6 +40,8 @@ mv "${BASE_PATH}/panel/production/app.js" "${BASE_PATH}/production-code/web"
 mv "${BASE_PATH}/panel/production/app.js.map" "${BASE_PATH}/production-code/web"
 cp -f "${BASE_PATH}/panel/package.json" "${BASE_PATH}/production-code/web/package.json"
 cp -f "${BASE_PATH}/panel/package-lock.json" "${BASE_PATH}/production-code/web/package-lock.json"
+
+cp -r "${BASE_PATH}/common" "${BASE_PATH}/production-code"
 
 mv "${BASE_PATH}"/frontend/dist/* "${BASE_PATH}/production-code/web/public"
 

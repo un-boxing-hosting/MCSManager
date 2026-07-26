@@ -68,6 +68,7 @@ export default class InstanceConfig implements IGlobalInstanceConfig {
     image: "",
     uploadSpeedLimit: 0,
     downloadSpeedLimit: 0,
+    forcePullImage: false,
     ports: [],
     extraVolumes: [],
     capAdd: [],

@@ -86,8 +86,10 @@ export default class DockerPullCommand extends InstanceCommand {
 
     const cachedStartCount = instance.startCount;
 
-    // If the image exists, there is no need to pull again.
-    if (await checkImage(imageName)) {
+    const forcePullImage = instance.config.docker.forcePullImage === true;
+
+    // If the image exists, there is no need to pull again unless forced.
+    if (!forcePullImage && (await checkImage(imageName))) {
       logger.info(`Image ${imageName} already exists locally, skipping pull`);
       instance.println("CONTAINER", $t("TXT_CODE_docker_pull_image_exists", { imageName }));
       return;

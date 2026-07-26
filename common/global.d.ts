@@ -79,6 +79,7 @@ declare global {
     updateCommandImage?: string;
     containerName?: string;
     image?: string;
+    forcePullImage?: boolean;
     memory?: number;
     ports?: string[];
     extraVolumes?: string[];
