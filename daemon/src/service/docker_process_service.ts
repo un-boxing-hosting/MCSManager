@@ -12,11 +12,11 @@ import path from "path";
 import { EventEmitter } from "stream";
 import { IInstanceProcess } from "../entity/instance/interface";
 import { $t } from "../i18n";
+import { getLinuxSystemId } from "../tools/system_user";
 import { AsyncTask } from "./async_task_service";
 import logger from "./log";
 import { NetworkLimitService } from "./network_limit_service";
 import InstanceSubsystem from "./system_instance";
-import { getLinuxSystemId } from "../tools/system_user";
 
 type PublicPortArray = {
   [key: string]: {
@@ -617,7 +617,22 @@ export class DockerProcessAdapter extends EventEmitter implements IInstanceProce
   }
 
   public async kill(s?: string) {
-    await this.container?.kill();
+    if (!this.container) return true;
+
+    const signal = (s ?? "").toUpperCase();
+    const isSoftStopSignal = ["", "SIGTERM", "SIGINT", "SIGQUIT"].includes(signal);
+
+    if (isSoftStopSignal) {
+      try {
+        await this.container.stop({ t: 10 });
+        return true;
+      } catch (error) {
+        // If the container is already exiting or stop is rejected, fall back to a forced kill.
+        await this.container.kill(signal || "SIGKILL").catch(() => {});
+      }
+    }
+
+    await this.container.kill(signal || "SIGKILL");
     return true;
   }
 

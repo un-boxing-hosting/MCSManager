@@ -15,16 +15,24 @@ export default class GeneralStopCommand extends InstanceCommand {
     instance.status(Instance.STATUS_STOPPING);
     instance.ignoreEventTaskOnce();
 
-    const stopCommandList = stopCommand.split("\n");
-    for (const stopCommand of stopCommandList) {
-      await instance.execPreset("command", stopCommand);
-    }
-
-    instance.print("\n");
-    instance.println("INFO", $t("TXT_CODE_pty_stop.execCmd", { stopCommand: `\n${stopCommand}` }));
-
     const cacheStartCount = instance.startCount;
     const stopTimeoutSec = Number(instance.config.stopTimeout) || 0;
+
+    if (instance.config.processType === "docker") {
+      try {
+        await instance.process.kill("SIGTERM");
+      } catch (err) {
+        instance.println("ERROR", `${err}`);
+      }
+    } else {
+      const stopCommandList = stopCommand.split("\n");
+      for (const stopCommand of stopCommandList) {
+        await instance.execPreset("command", stopCommand);
+      }
+
+      instance.print("\n");
+      instance.println("INFO", $t("TXT_CODE_pty_stop.execCmd", { stopCommand: `\n${stopCommand}` }));
+    }
 
     if (stopTimeoutSec > 0) {
       // Enabled: if the instance is still stopping after stopTimeout seconds, escalate to a force kill
